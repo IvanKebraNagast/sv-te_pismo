@@ -18,7 +18,6 @@
     }
     .spinner {
       border-top-color: #3b82f6;
-      -webkit-animation: spinner 1.5s linear infinite;
       animation: spinner 1.5s linear infinite;
     }
     @keyframes spinner {
@@ -117,7 +116,7 @@
       apiKey: "AIzaSyAfs4NluHtDInHgmD22DHYDLt6ypl008DU",
       authDomain: "citanie-sv.firebaseapp.com",
       projectId: "citanie-sv",
-      storageBucket: "citanie-sv.firebasestorage.app",
+      storageBucket: "citanie-sv.appspot.com",   // ✅ opravené
       messagingSenderId: "16378682541",
       appId: "1:16378682541:web:be64c5a5fff65055657a24",
       measurementId: "G-VM2CKF7QYS"
@@ -141,12 +140,8 @@
     const loadingDiv = document.getElementById('loading');
     const errorDiv = document.getElementById('error-message');
     const messageDisplay = document.getElementById('message-display');
-    const questionEditor = document.getElementById('question-editor');
-    const toggleEditorButton = document.getElementById('toggle-editor-button');
     const newQuestionInput = document.getElementById('new-question-input');
-    const editorMessage = document.getElementById('editor-message');
     const totalSummary = document.getElementById('total-summary');
-    const deleteConfirmationModal = document.getElementById('delete-confirmation-modal');
     let currentQuestion = INITIAL_QUESTION;
 
     async function initFirebase() {
@@ -160,6 +155,7 @@
         setupRealtimeListener();
       } catch (error) {
         console.error(error);
+        errorDiv.textContent = "Chyba: Konfigurácia aplikácie chýba alebo Firestore nie je dostupný.";
         errorDiv.classList.remove('hidden');
       }
     }
