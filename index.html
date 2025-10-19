@@ -31,13 +31,14 @@
     <h1 class="text-4xl font-extrabold text-gray-800 mb-2 text-center flex items-center justify-center">
       <span class="mr-3 text-5xl">📖</span> Anketa čítanie svätého písma
     </h1>
-
     <div id="main-message-container" class="text-center mt-2 flex justify-center h-6">
       <p id="message-display" class="text-center text-base font-semibold text-gray-500"></p>
     </div>
 
     <div class="space-y-6">
-      <p id="question-display" class="text-2xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">Načíta sa otázka...</p>
+      <p id="question-display" class="text-2xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">
+        Načíta sa otázka...
+      </p>
       <div id="people-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 border-t pt-6"></div>
     </div>
 
@@ -47,24 +48,34 @@
     </div>
 
     <div class="mt-8 pt-4 border-t text-center">
-      <button id="toggle-editor-button" onclick="toggleQuestionEditor()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-150 active:scale-95 transform hover:shadow-xl">
+      <button id="toggle-editor-button" onclick="toggleQuestionEditor()"
+        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-150 active:scale-95 transform hover:shadow-xl">
         Zmeniť otázku
       </button>
     </div>
 
     <div id="question-editor" class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200 hidden">
       <h3 class="font-bold text-gray-700 mb-3 text-lg">Editor Otázky</h3>
-      <textarea id="new-question-input" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-3 text-gray-700 shadow-inner" placeholder="Sem zadajte novú otázku..."></textarea>
+      <textarea id="new-question-input" rows="2"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-3 text-gray-700 shadow-inner"
+        placeholder="Sem zadajte novú otázku..."></textarea>
       <div class="flex justify-end space-x-2">
-        <button onclick="saveQuestion()" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 active:scale-95 shadow">Uložiť zmenu</button>
-        <button onclick="toggleQuestionEditor(true)" class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 active:scale-95 shadow">Zrušiť</button>
+        <button onclick="saveQuestion()"
+          class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 active:scale-95 shadow">
+          Uložiť zmenu
+        </button>
+        <button onclick="toggleQuestionEditor(true)"
+          class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 active:scale-95 shadow">
+          Zrušiť
+        </button>
       </div>
       <p id="editor-message" class="text-sm pt-2 h-5 text-center text-gray-600"></p>
     </div>
 
     <div class="mt-12 pt-6 border-t border-red-300 text-center">
       <h3 class="text-xl font-bold text-red-600 mb-3">Nebezpečná Zóna (Reštart)</h3>
-      <button id="confirm-delete-button" onclick="confirmDeletePoll()" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-150 active:scale-95 transform hover:shadow-xl">
+      <button id="confirm-delete-button" onclick="confirmDeletePoll()"
+        class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-150 active:scale-95 transform hover:shadow-xl">
         VYMAZAŤ ANKETU (Reštart)
       </button>
     </div>
@@ -73,7 +84,9 @@
       <div class="inline-block w-6 h-6 border-4 border-gray-200 border-t-4 border-t-blue-600 rounded-full spinner mr-2"></div>
       Načítavam anketu a pripájam sa k databáze...
     </div>
-    <div id="error-message" class="text-center text-red-600 font-medium hidden pt-8">Chyba pri pripojení. Skúste obnoviť stránku.</div>
+    <div id="error-message" class="text-center text-red-600 font-medium hidden pt-8">
+      Chyba pri pripojení. Skúste obnoviť stránku.
+    </div>
   </div>
 
   <div id="delete-confirmation-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
@@ -81,8 +94,12 @@
       <h3 class="text-2xl font-bold text-red-600 mb-3">Naozaj vymazať?</h3>
       <p class="text-gray-700 mb-6">Týmto sa natrvalo vymažú všetky hlasy a otázka v databáze, a anketa sa nanovo inicializuje s pôvodnou otázkou.</p>
       <div class="flex justify-between space-x-4">
-        <button onclick="deletePoll()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition active:scale-95 shadow">Áno, vymazať natrvalo</button>
-        <button onclick="hideDeleteConfirmation()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 rounded-lg transition active:scale-95 shadow">Zrušiť</button>
+        <button onclick="deletePoll()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition active:scale-95 shadow">
+          Áno, vymazať natrvalo
+        </button>
+        <button onclick="hideDeleteConfirmation()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 rounded-lg transition active:scale-95 shadow">
+          Zrušiť
+        </button>
       </div>
     </div>
   </div>
@@ -92,7 +109,6 @@
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, onSnapshot, setDoc, updateDoc, increment, getDoc, runTransaction, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // 🔥 Tvoja Firebase konfigurácia
     const firebaseConfig = {
       apiKey: "AIzaSyAfs4NluHtDInHgmD22DHYDLt6ypl008DU",
       authDomain: "citanie-sv.firebaseapp.com",
@@ -103,61 +119,17 @@
       measurementId: "G-VM2CKF7QYS"
     };
 
-    let db, auth, userId = 'anon';
     const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    auth = getAuth(app);
-
-    const POLL_DOC_PATH = `polls/svate_pismo`;
-    const INITIAL_QUESTION = "Kto pravidelne číta Sväté Písmo?";
-    const PEOPLE = { 'adka': 'Aďka', 'danka': 'Danka', 'emilia': 'Emília', 'ivan': 'Ivan', 'janka': 'Janka', 'marketka': 'Markétka', 'milan': 'Milan' };
-
-    const questionDisplay = document.getElementById('question-display');
-    const peopleList = document.getElementById('people-list');
-    const loadingDiv = document.getElementById('loading');
-    const errorDiv = document.getElementById('error-message');
-    const messageDisplay = document.getElementById('message-display');
-    const newQuestionInput = document.getElementById('new-question-input');
-    const editorMessage = document.getElementById('editor-message');
-    const totalSummary = document.getElementById('total-summary');
-    const deleteConfirmationModal = document.getElementById('delete-confirmation-modal');
-    let currentQuestion = INITIAL_QUESTION;
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
     async function initFirebase() {
-      loadingDiv.classList.remove('hidden');
       try {
         await signInAnonymously(auth);
-        userId = auth.currentUser?.uid || crypto.randomUUID();
-        await checkAndInitializePoll();
-        setupRealtimeListener();
-      } catch (error) {
-        console.error("Chyba pri inicializácii:", error);
-        errorDiv.classList.remove('hidden');
-        loadingDiv.classList.add('hidden');
+        console.log("Firebase inicializované!");
+      } catch (e) {
+        console.error("Chyba pri inicializácii:", e);
       }
-    }
-
-    async function checkAndInitializePoll() {
-      const pollRef = doc(db, POLL_DOC_PATH);
-      const pollSnap = await getDoc(pollRef);
-      if (!pollSnap.exists()) {
-        const initialPeopleData = {};
-        Object.keys(PEOPLE).forEach(key => initialPeopleData[key] = { yes: 0, no: 0 });
-        await setDoc(pollRef, { question: INITIAL_QUESTION, people: initialPeopleData, userVotes: {} });
-      }
-    }
-
-    function setupRealtimeListener() {
-      const pollRef = doc(db, POLL_DOC_PATH);
-      onSnapshot(pollRef, (docSnap) => {
-        loadingDiv.classList.add('hidden');
-        if (docSnap.exists()) renderPoll(docSnap.data());
-      });
-    }
-
-    function renderPoll(data) {
-      currentQuestion = data.question || INITIAL_QUESTION;
-      questionDisplay.textContent = currentQuestion;
     }
 
     window.onload = initFirebase;
