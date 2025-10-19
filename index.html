@@ -18,6 +18,7 @@
     }
     .spinner {
       border-top-color: #3b82f6;
+      -webkit-animation: spinner 1.5s linear infinite;
       animation: spinner 1.5s linear infinite;
     }
     @keyframes spinner {
@@ -107,7 +108,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, onSnapshot, setDoc, updateDoc, getDoc, runTransaction, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, onSnapshot, setDoc, getDoc, runTransaction, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // --- Firebase konfigurácia ---
     let db, auth, userId = 'anon';
@@ -116,12 +117,11 @@
       apiKey: "AIzaSyAfs4NluHtDInHgmD22DHYDLt6ypl008DU",
       authDomain: "citanie-sv.firebaseapp.com",
       projectId: "citanie-sv",
-      storageBucket: "citanie-sv.appspot.com",   // ✅ opravené
+      storageBucket: "citanie-sv.appspot.com",
       messagingSenderId: "16378682541",
       appId: "1:16378682541:web:be64c5a5fff65055657a24",
       measurementId: "G-VM2CKF7QYS"
     };
-    const initialAuthToken = null;
 
     const POLL_DOC_PATH = `artifacts/${appId}/public/data/polls/team_poll`;
     const INITIAL_QUESTION = "Kto pravidelne číta Sväté Písmo?";
@@ -139,10 +139,8 @@
     const peopleList = document.getElementById('people-list');
     const loadingDiv = document.getElementById('loading');
     const errorDiv = document.getElementById('error-message');
-    const messageDisplay = document.getElementById('message-display');
     const newQuestionInput = document.getElementById('new-question-input');
     const totalSummary = document.getElementById('total-summary');
-    let currentQuestion = INITIAL_QUESTION;
 
     async function initFirebase() {
       try {
@@ -155,7 +153,6 @@
         setupRealtimeListener();
       } catch (error) {
         console.error(error);
-        errorDiv.textContent = "Chyba: Konfigurácia aplikácie chýba alebo Firestore nie je dostupný.";
         errorDiv.classList.remove('hidden');
       }
     }
@@ -179,9 +176,7 @@
     }
 
     function renderPoll(data) {
-      currentQuestion = data.question || INITIAL_QUESTION;
-      questionDisplay.textContent = currentQuestion;
-      newQuestionInput.value = currentQuestion;
+      questionDisplay.textContent = data.question || INITIAL_QUESTION;
       const peopleData = data.people || {};
       const userVotes = data.userVotes?.[userId] || {};
       peopleList.innerHTML = '';
