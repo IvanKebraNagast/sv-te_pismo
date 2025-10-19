@@ -2,14 +2,10 @@
 <html lang="sk">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Anketa čítanie svätého písma</title>
-
-  <!-- Tailwind (stabilný build) -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
     body {
       font-family: 'Inter', sans-serif;
       background-color: #f3f4f6;
@@ -19,91 +15,31 @@
       min-height: 100vh;
       padding: 20px;
     }
-    .spinner {
-      border-top-color: #3b82f6;
-      animation: spinner 1.5s linear infinite;
-    }
-    @keyframes spinner {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
   </style>
 </head>
 <body>
-  <div id="app" class="w-full max-w-4xl p-6 md:p-10 bg-white shadow-2xl rounded-xl mx-auto">
-    <h1 class="text-4xl font-extrabold text-gray-800 mb-2 text-center flex items-center justify-center">
-      <span class="mr-3 text-5xl">📖</span> Anketa čítanie svätého písma
-    </h1>
-
-    <div id="main-message-container" class="text-center mt-2 flex justify-center h-6">
-      <p id="message-display" class="text-center text-base font-semibold text-gray-500"></p>
+  <div id="app" class="max-w-4xl w-full bg-white p-6 rounded-xl shadow-xl text-center">
+    <h1 class="text-3xl font-extrabold text-gray-800 mb-4">📖 Anketa čítanie svätého písma</h1>
+    <p id="question-display" class="text-xl text-blue-700 font-bold mb-6">Načíta sa otázka...</p>
+    <div id="people-list" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"></div>
+    <div id="summary" class="border-t pt-4">
+      <h2 class="text-lg font-semibold text-gray-700 mb-2">Súhrn hlasovania</h2>
+      <div id="total-summary" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
     </div>
-
-    <div class="space-y-6">
-      <p id="question-display" class="text-2xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">Načíta sa otázka...</p>
-      <div id="people-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 border-t pt-6"></div>
-    </div>
-
-    <div id="total-summary-section" class="mt-8 pt-6 border-t border-gray-300">
-      <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Súhrn hlasovania (väčšina hlasov)</h2>
-      <div id="total-summary" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4"></div>
-    </div>
-
-    <div class="mt-8 pt-4 border-t text-center">
-      <button id="toggle-editor-button" onclick="toggleQuestionEditor()"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg">
-        Zmeniť otázku
-      </button>
-    </div>
-
-    <div id="question-editor" class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200 hidden">
-      <h3 class="font-bold text-gray-700 mb-3 text-lg">Editor Otázky</h3>
-      <textarea id="new-question-input" rows="2" class="w-full p-3 border border-gray-300 rounded-lg mb-3 text-gray-700 shadow-inner"
-        placeholder="Sem zadajte novú otázku..."></textarea>
-      <div class="flex justify-end space-x-2">
-        <button onclick="saveQuestion()" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow">Uložiť zmenu</button>
-        <button onclick="toggleQuestionEditor(true)" class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg shadow">Zrušiť</button>
-      </div>
-      <p id="editor-message" class="text-sm pt-2 h-5 text-center text-gray-600"></p>
-    </div>
-
-    <div class="mt-12 pt-6 border-t border-red-300 text-center">
-      <h3 class="text-xl font-bold text-red-600 mb-3">Nebezpečná Zóna (Reštart)</h3>
-      <button id="confirm-delete-button" onclick="confirmDeletePoll()"
-        class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg">
-        VYMAZAŤ ANKETU (Reštart)
-      </button>
-    </div>
-
-    <div id="loading" class="text-center text-blue-600 font-medium pt-8">
-      <div class="inline-block w-6 h-6 border-4 border-gray-200 border-t-4 border-t-blue-600 rounded-full spinner mr-2"></div>
-      Načítavam anketu a pripájam sa k databáze...
-    </div>
-    <div id="error-message" class="text-center text-red-600 font-medium hidden pt-8">Chyba pri pripojení. Skúste obnoviť stránku.</div>
-  </div>
-
-  <div id="delete-confirmation-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full">
-      <h3 class="text-2xl font-bold text-red-600 mb-3">Naozaj vymazať?</h3>
-      <p class="text-gray-700 mb-6">Týmto sa natrvalo vymažú všetky hlasy a otázka v databáze.</p>
-      <div class="flex justify-between space-x-4">
-        <button onclick="deletePoll()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg">Áno, vymazať</button>
-        <button onclick="hideDeleteConfirmation()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 rounded-lg">Zrušiť</button>
-      </div>
-    </div>
+    <p id="message" class="text-sm text-gray-600 mt-4"></p>
+    <div id="error-message" class="text-red-600 font-medium mt-4 hidden">Chyba pripojenia.</div>
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, runTransaction, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, increment, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // 🔧 Tvoja reálna Firebase konfigurácia
+    // 🔥 Tvoja Firebase konfigurácia
     const firebaseConfig = {
       apiKey: "AIzaSyAfs4NluHtDInHgmD22DHYDLt6ypl008DU",
       authDomain: "citanie-sv.firebaseapp.com",
       projectId: "citanie-sv",
-      storageBucket: "citanie-sv.appspot.com",
+      storageBucket: "citanie-sv.firebasestorage.app",
       messagingSenderId: "16378682541",
       appId: "1:16378682541:web:be64c5a5fff65055657a24",
       measurementId: "G-VM2CKF7QYS"
@@ -111,105 +47,96 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app);
 
-    const POLL_DOC_PATH = "artifacts/default-poll-app";
+    const PEOPLE = {
+      adka: "Aďka",
+      danka: "Danka",
+      emilia: "Emília",
+      ivan: "Ivan",
+      janka: "Janka",
+      marketka: "Markétka",
+      milan: "Milan"
+    };
+
+    const questionDisplay = document.getElementById("question-display");
+    const peopleList = document.getElementById("people-list");
+    const totalSummary = document.getElementById("total-summary");
+    const errorMessage = document.getElementById("error-message");
+    const message = document.getElementById("message");
+
+    const POLL_DOC_PATH = "polls/svate_pismo";
     const INITIAL_QUESTION = "Kto pravidelne číta Sväté Písmo?";
-    const PEOPLE = { adka:"Aďka", danka:"Danka", emilia:"Emília", ivan:"Ivan", janka:"Janka", marketka:"Markétka", milan:"Milan" };
 
-    const questionDisplay = document.getElementById('question-display');
-    const peopleList = document.getElementById('people-list');
-    const loadingDiv = document.getElementById('loading');
-    const messageDisplay = document.getElementById('message-display');
-    const totalSummary = document.getElementById('total-summary');
-    const questionEditor = document.getElementById('question-editor');
-    const toggleEditorButton = document.getElementById('toggle-editor-button');
-    const newQuestionInput = document.getElementById('new-question-input');
-    const editorMessage = document.getElementById('editor-message');
-    const deleteConfirmationModal = document.getElementById('delete-confirmation-modal');
-
-    let userId = 'anon';
-    let skVoice = null;
-
-    // === TTS ===
-    function loadVoices(){
-      const v = window.speechSynthesis.getVoices();
-      skVoice = v.find(x => x.lang === 'sk-SK') || v.find(x => x.lang.startsWith('cs-'));
-    }
-    if('speechSynthesis' in window){
-      window.speechSynthesis.onvoiceschanged = loadVoices;
-      loadVoices();
-    }
-    function playVoice(text){
-      const u = new SpeechSynthesisUtterance(text);
-      if(skVoice) u.voice = skVoice;
-      u.lang = skVoice ? skVoice.lang : 'sk-SK';
-      u.rate = 0.9;
-      window.speechSynthesis.speak(u);
-    }
-
-    async function init(){
-      await signInAnonymously(auth);
-      userId = auth.currentUser?.uid || crypto.randomUUID();
-      const pollRef = doc(db, POLL_DOC_PATH);
-      const snap = await getDoc(pollRef);
-      if(!snap.exists()){
-        const initialPeople = {};
-        Object.keys(PEOPLE).forEach(k=>initialPeople[k]={yes:0,no:0});
-        await setDoc(pollRef,{question:INITIAL_QUESTION,people:initialPeople,userVotes:{}});
+    async function init() {
+      try {
+        const docRef = doc(db, POLL_DOC_PATH);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) {
+          const peopleInit = {};
+          Object.keys(PEOPLE).forEach(k => (peopleInit[k] = { yes: 0, no: 0 }));
+          await setDoc(docRef, { question: INITIAL_QUESTION, people: peopleInit });
+        }
+        onSnapshot(docRef, snap => {
+          if (snap.exists()) renderPoll(snap.data());
+        });
+      } catch (err) {
+        console.error(err);
+        errorMessage.classList.remove("hidden");
       }
-      onSnapshot(pollRef, snap=>{
-        render(snap.data());
-        loadingDiv.classList.add('hidden');
-      });
     }
 
-    function render(data){
+    function renderPoll(data) {
       questionDisplay.textContent = data.question;
-      const userVotes = data.userVotes?.[userId] || {};
-      peopleList.innerHTML = '';
-      totalSummary.innerHTML = '';
+      peopleList.innerHTML = "";
+      totalSummary.innerHTML = "";
 
-      Object.keys(PEOPLE).forEach(k=>{
-        const d = data.people?.[k] || {yes:0,no:0};
-        const total = d.yes + d.no;
-        const yp = total? (d.yes/total)*100 : 0;
-        const np = total? (d.no/total)*100 : 0;
-        const uv = userVotes[k] || 'none';
-        let voteText = uv==='yes'?'😇👍 ÁNO': uv==='no'?'😔👎 NIE':'Bez hlasu';
-        const block = `
-          <div class="p-4 bg-white rounded-xl shadow-lg border border-gray-100">
-            <h2 class="text-xl font-bold text-gray-800 mb-2 text-center">${PEOPLE[k]}</h2>
-            <div class="text-center mb-2">${voteText}</div>
-            <div class="flex justify-between mb-3">
-              <button onclick="vote('${k}','yes')" class="flex-1 mr-1 bg-green-${uv==='yes'?'700':'500'} hover:bg-green-600 text-white rounded-lg py-2">✅ Áno</button>
-              <button onclick="vote('${k}','no')" class="flex-1 ml-1 bg-red-${uv==='no'?'700':'500'} hover:bg-red-600 text-white rounded-lg py-2">❌ Nie</button>
-            </div>
-            <div class="text-sm text-gray-600">Áno: ${d.yes} / Nie: ${d.no}</div>
-          </div>`;
-        peopleList.insertAdjacentHTML('beforeend', block);
+      Object.entries(PEOPLE).forEach(([key, name]) => {
+        const p = data.people[key] || { yes: 0, no: 0 };
+        const total = p.yes + p.no || 1;
+        const yesPercent = Math.round((p.yes / total) * 100);
+        const noPercent = Math.round((p.no / total) * 100);
+
+        const el = document.createElement("div");
+        el.className = "p-4 border rounded-xl shadow bg-gray-50";
+        el.innerHTML = `
+          <h3 class="text-lg font-bold mb-2">${name}</h3>
+          <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded mr-2" onclick="vote('${key}','yes')">✅ Áno</button>
+          <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded" onclick="vote('${key}','no')">❌ Nie</button>
+          <div class="mt-3 text-sm text-gray-700">Áno: ${p.yes} (${yesPercent}%) &nbsp;|&nbsp; Nie: ${p.no} (${noPercent}%)</div>
+        `;
+        peopleList.appendChild(el);
+
+        // Súhrn
+        const summaryDiv = document.createElement("div");
+        summaryDiv.className =
+          p.yes > p.no
+            ? "bg-green-100 text-green-800 p-3 rounded-xl font-bold"
+            : p.no > p.yes
+            ? "bg-red-100 text-red-800 p-3 rounded-xl font-bold"
+            : "bg-gray-100 text-gray-700 p-3 rounded-xl font-bold";
+        summaryDiv.textContent = `${name}: ${p.yes > p.no ? "ÁNO ✅" : p.no > p.yes ? "NIE ❌" : "REMÍZA ⚪"}`;
+        totalSummary.appendChild(summaryDiv);
       });
     }
 
-    window.vote = async function(k,v){
-      const pollRef = doc(db, POLL_DOC_PATH);
-      playVoice(v==='yes'?`${PEOPLE[k]}, ďakujem ti za tvoj hlas ÁNO. Boh ti žehnaj.`:`${PEOPLE[k]}, veľmi ma mrzí, že nemôžeš prísť. Boh ti žehnaj.`);
-      await runTransaction(db, async (tx)=>{
-        const snap = await tx.get(pollRef);
-        const data = snap.data();
-        const uv = data.userVotes?.[userId]?.[k];
-        if(uv===v) return;
-        const updates = {};
-        if(uv==='yes') updates[`people.${k}.yes`] = increment(-1);
-        if(uv==='no') updates[`people.${k}.no`] = increment(-1);
-        updates[`people.${k}.${v}`] = increment(1);
-        updates[`userVotes.${userId}.${k}`] = v;
-        tx.update(pollRef, updates);
+    window.vote = async (person, voteType) => {
+      const docRef = doc(db, POLL_DOC_PATH);
+      await runTransaction(db, async transaction => {
+        const pollDoc = await transaction.get(docRef);
+        if (!pollDoc.exists()) return;
+        const data = pollDoc.data();
+        const p = data.people[person];
+        if (voteType === "yes") {
+          transaction.update(docRef, { [`people.${person}.yes`]: increment(1) });
+        } else {
+          transaction.update(docRef, { [`people.${person}.no`]: increment(1) });
+        }
       });
-    }
+      message.textContent = "Hlas bol započítaný ✅";
+      setTimeout(() => (message.textContent = ""), 2000);
+    };
 
-    document.addEventListener("click",()=>{window.speechSynthesis.cancel();},{once:true});
-    window.onload = init;
+    init();
   </script>
 </body>
 </html>
