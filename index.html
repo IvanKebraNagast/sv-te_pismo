@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Anketa čítanie svätého písma</title>
 
-  <!-- Tailwind (stabilný build, nie dynamický) -->
+  <!-- Tailwind (stabilný build) -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
   <style>
@@ -94,18 +94,19 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, runTransaction, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, runTransaction, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+    // 🔧 Tvoja reálna Firebase konfigurácia
     const firebaseConfig = {
-      apiKey: "AIzaSyAf4s4NLuhtDInHgDnD22DHYDLt6yp10B0U",
+      apiKey: "AIzaSyAfs4NluHtDInHgmD22DHYDLt6ypl008DU",
       authDomain: "citanie-sv.firebaseapp.com",
       projectId: "citanie-sv",
       storageBucket: "citanie-sv.appspot.com",
       messagingSenderId: "16378682541",
-      appId: "1:16378682541:web:be64c5a5fff6535565724",
-      measurementId: "G-VM2CKF7QY5"
+      appId: "1:16378682541:web:be64c5a5fff65055657a24",
+      measurementId: "G-VM2CKF7QYS"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -128,10 +129,9 @@
     const deleteConfirmationModal = document.getElementById('delete-confirmation-modal');
 
     let userId = 'anon';
-    let currentQuestion = INITIAL_QUESTION;
-
-    // === SpeechSynthesis ===
     let skVoice = null;
+
+    // === TTS ===
     function loadVoices(){
       const v = window.speechSynthesis.getVoices();
       skVoice = v.find(x => x.lang === 'sk-SK') || v.find(x => x.lang.startsWith('cs-'));
@@ -141,7 +141,6 @@
       loadVoices();
     }
     function playVoice(text){
-      if(!('speechSynthesis' in window)) return;
       const u = new SpeechSynthesisUtterance(text);
       if(skVoice) u.voice = skVoice;
       u.lang = skVoice ? skVoice.lang : 'sk-SK';
@@ -187,10 +186,6 @@
               <button onclick="vote('${k}','no')" class="flex-1 ml-1 bg-red-${uv==='no'?'700':'500'} hover:bg-red-600 text-white rounded-lg py-2">❌ Nie</button>
             </div>
             <div class="text-sm text-gray-600">Áno: ${d.yes} / Nie: ${d.no}</div>
-            <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden mt-1">
-              <div class="bg-green-500 h-2" style="width:${yp}%"></div>
-              <div class="bg-red-500 h-2" style="width:${np}%"></div>
-            </div>
           </div>`;
         peopleList.insertAdjacentHTML('beforeend', block);
       });
@@ -212,30 +207,6 @@
         tx.update(pollRef, updates);
       });
     }
-
-    window.confirmDeletePoll = ()=>{deleteConfirmationModal.classList.remove('hidden');deleteConfirmationModal.classList.add('flex');};
-    window.hideDeleteConfirmation = ()=>{deleteConfirmationModal.classList.add('hidden');deleteConfirmationModal.classList.remove('flex');};
-    window.deletePoll = async ()=>{
-      const pollRef = doc(db, POLL_DOC_PATH);
-      await deleteDoc(pollRef);
-      await setDoc(pollRef,{question:INITIAL_QUESTION,people:{},userVotes:{}});
-      hideDeleteConfirmation();
-    }
-
-    window.toggleQuestionEditor = (hide=false)=>{
-      if(hide){questionEditor.classList.add('hidden');toggleEditorButton.textContent='Zmeniť otázku';return;}
-      const hidden = questionEditor.classList.toggle('hidden');
-      toggleEditorButton.textContent = hidden?'Zmeniť otázku':'Zrušiť';
-    };
-
-    window.saveQuestion = async ()=>{
-      const q = newQuestionInput.value.trim();
-      if(q.length<5){editorMessage.textContent='Otázka musí mať aspoň 5 znakov.';return;}
-      const pollRef = doc(db, POLL_DOC_PATH);
-      await updateDoc(pollRef,{question:q});
-      editorMessage.textContent='Otázka uložená!';
-      setTimeout(()=>toggleQuestionEditor(true),1500);
-    };
 
     document.addEventListener("click",()=>{window.speechSynthesis.cancel();},{once:true});
     window.onload = init;
