@@ -32,23 +32,27 @@
         #delete-confirmation-modal {
             transition: opacity 0.3s ease-out;
         }
+        /* Štýl pre hlavný kontajner, aby bol pekný a centrovaný na všetkých zariadeniach */
+        #app {
+            max-width: 90%; /* Zabezpečí dobré zobrazenie na mobiloch */
+        }
     </style>
 </head>
 <body>
 
     <div id="app" class="w-full max-w-4xl p-6 md:p-10 bg-white shadow-2xl rounded-xl transition-all duration-300 mx-auto">
         <!-- Hlavný nadpis -->
-        <h1 class="text-4xl font-extrabold text-gray-800 mb-2 text-center flex items-center justify-center">
-            <span class="mr-3 text-5xl">📖</span> Anketa čítanie svätého písma
+        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2 text-center flex items-center justify-center">
+            <span class="mr-3 text-4xl md:text-5xl text-yellow-500">📖</span> Anketa čítanie Svätého Písma
         </h1>
 
         <div id="main-message-container" class="text-center mt-2 flex justify-center h-6">
-            <p id="message-display" class="text-center text-base font-semibold text-gray-500"></p>
+            <p id="message-display" class="text-center text-sm font-semibold text-gray-500"></p>
         </div>
 
         <!-- Sekcia pre otázku -->
         <div class="space-y-6">
-            <p id="question-display" class="text-2xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">Načíta sa otázka...</p>
+            <p id="question-display" class="text-xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">Načíta sa otázka...</p>
             
             <!-- Sekcia pre výsledky a hlasovanie (dynamický obsah) -->
             <div id="people-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 border-t pt-6">
@@ -58,8 +62,8 @@
         
         <!-- Sekcia pre súhrn výsledkov -->
         <div id="total-summary-section" class="mt-8 pt-6 border-t border-gray-300">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Súhrn hlasovania (väčšina hlasov)</h2>
-            <div id="total-summary" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 text-center">Súhrn hlasovania (väčšina hlasov)</h2>
+            <div id="total-summary" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
                 <!-- Súhrn sa vloží sem pomocou JS -->
             </div>
         </div>
@@ -185,6 +189,10 @@
                 // Fallback na český hlas (cs-CZ), ak slovenský nie je dostupný
                 skVoice = voices.find(voice => voice.lang.startsWith('cs-'));
             }
+            // Fallback na akýkoľvek EN hlas, ak nie je SK/CZ
+            if (!skVoice) {
+                skVoice = voices.find(voice => voice.lang.startsWith('en-'));
+            }
         };
 
         if ('speechSynthesis' in window) {
@@ -252,7 +260,9 @@
                 }
                 
                 // Používame UID pre sledovanie individuálnych hlasov
-                userId = auth.currentUser?.uid || crypto.randomUUID();
+                // crypto.randomUUID() funguje len v moderných prehliadačoch, pre staršie sa to spraví ručne
+                const generateRandomId = () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                userId = auth.currentUser?.uid || (window.crypto?.randomUUID ? window.crypto.randomUUID() : generateRandomId());
                 
                 console.log("Firebase inicializované. User ID:", userId);
 
@@ -281,6 +291,7 @@
                     initialPeopleData[key] = { yes: 0, no: 0 };
                 });
 
+                // Nastavenie počtu hlasov na 0, userVotes je prázdny
                 await setDoc(pollRef, {
                     question: INITIAL_QUESTION,
                     people: initialPeopleData,
@@ -373,8 +384,9 @@
                         </div>`;
                 }
                 
-                // HTML pre meno osoby
-                const personNameHtml = `<h2 class="text-xl font-bold text-gray-800">${displayName}</h2>`;
+                // HTML pre meno osoby (použijeme farby pre rozlíšenie)
+                const nameColor = (key.endsWith('a') || key.endsWith('ka')) ? 'text-pink-600' : 'text-indigo-600';
+                const personNameHtml = `<h2 class="text-xl font-bold ${nameColor}">${displayName}</h2>`;
 
                 // Vytvorenie HTML pre každú osobu
                 const personHtml = `
@@ -421,7 +433,7 @@
                 // --- LOGIKA A VYKRESLENIE SÚHRNU ---
                 let summaryStatusClass = 'bg-gray-100 text-gray-600 border-gray-300';
                 let summaryIcon = '⚪'; // neutrálny emotikon
-                let summaryText = 'Remíza';
+                let summaryText = 'Remíza / Nula';
 
                 if (yesCount > noCount) {
                     summaryStatusClass = 'bg-green-100 text-green-700 border-green-500';
@@ -435,8 +447,8 @@
                 
                 const summaryHtml = `
                     <div class="p-3 rounded-xl border-2 ${summaryStatusClass} flex flex-col items-center justify-center text-center transition-all duration-300 transform hover:scale-[1.05] shadow-sm">
-                        <p class="text-lg font-semibold">${displayName}</p>
-                        <p class="text-2xl font-extrabold mt-1">${summaryIcon} ${summaryText}</p>
+                        <p class="text-sm md:text-lg font-semibold ${nameColor}">${displayName}</p>
+                        <p class="text-xl md:text-2xl font-extrabold mt-1">${summaryIcon} ${summaryText}</p>
                     </div>
                 `;
                 totalSummary.insertAdjacentHTML('beforeend', summaryHtml);
@@ -482,17 +494,22 @@
                 await deleteDoc(pollRef);
                 
                 // 2. Manuálna re-inicializácia po vymazaní (onSnapshot by to urobil aj sám, ale pre istotu)
-                await checkAndInitializePoll(); 
-                
-                messageDisplay.textContent = "Anketa bola úspešne vymazaná a reštartovaná!";
+                // Dávame sem timeout, aby sme dali priestor listeneru na zachytenie zmeny
+                setTimeout(async () => {
+                    await checkAndInitializePoll(); 
+                    messageDisplay.textContent = "Anketa bola úspešne vymazaná a reštartovaná!";
+                    setTimeout(() => {
+                         messageDisplay.textContent = ''; 
+                    }, 3000);
+                }, 1000); // 1 sekunda oneskorenia
+
                 
             } catch (error) {
                 console.error("Chyba pri mazaní ankety:", error);
                 messageDisplay.textContent = `Chyba pri mazaní ankety: ${error.message}`;
-            } finally {
-                setTimeout(() => {
+                 setTimeout(() => {
                     messageDisplay.textContent = ''; 
-                }, 3000); 
+                }, 3000);
             }
         }
         
