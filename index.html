@@ -1,138 +1,113 @@
 <!DOCTYPE html>
 <html lang="sk">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Anketa čítanie svätého písma</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f3f4f6;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    .spinner {
-      border-top-color: #3b82f6;
-      animation: spinner 1.5s linear infinite;
-    }
-    @keyframes spinner {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-  <div id="app" class="w-full max-w-4xl p-6 md:p-10 bg-white shadow-2xl rounded-xl transition-all duration-300 mx-auto">
-    <h1 class="text-4xl font-extrabold text-gray-800 mb-2 text-center flex items-center justify-center">
-      <span class="mr-3 text-5xl">📖</span> Anketa čítanie svätého písma
-    </h1>
-    <div id="main-message-container" class="text-center mt-2 flex justify-center h-6">
-      <p id="message-display" class="text-center text-base font-semibold text-gray-500"></p>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+    <div class="flex justify-center mb-4">
+      <span class="text-4xl">📖</span>
+    </div>
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Anketa čítanie svätého písma</h1>
+
+    <div id="questionBox" class="bg-blue-50 text-blue-700 font-semibold py-3 px-4 rounded mb-6">
+      Načíta sa otázka…
     </div>
 
-    <div class="space-y-6">
-      <p id="question-display" class="text-2xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">
-        Načíta sa otázka...
-      </p>
-      <div id="people-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 border-t pt-6"></div>
+    <div id="summaryBox" class="text-gray-700 font-semibold mb-6">
+      Súhrn hlasovania (väčšina hlasov)
     </div>
 
-    <div id="total-summary-section" class="mt-8 pt-6 border-t border-gray-300">
-      <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Súhrn hlasovania (väčšina hlasov)</h2>
-      <div id="total-summary" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4"></div>
-    </div>
+    <button id="changeQuestionBtn" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+      Zmeniť otázku
+    </button>
 
-    <div class="mt-8 pt-4 border-t text-center">
-      <button id="toggle-editor-button" onclick="toggleQuestionEditor()"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-150 active:scale-95 transform hover:shadow-xl">
-        Zmeniť otázku
-      </button>
-    </div>
-
-    <div id="question-editor" class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200 hidden">
-      <h3 class="font-bold text-gray-700 mb-3 text-lg">Editor Otázky</h3>
-      <textarea id="new-question-input" rows="2"
-        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-3 text-gray-700 shadow-inner"
-        placeholder="Sem zadajte novú otázku..."></textarea>
-      <div class="flex justify-end space-x-2">
-        <button onclick="saveQuestion()"
-          class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 active:scale-95 shadow">
-          Uložiť zmenu
-        </button>
-        <button onclick="toggleQuestionEditor(true)"
-          class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 active:scale-95 shadow">
-          Zrušiť
-        </button>
-      </div>
-      <p id="editor-message" class="text-sm pt-2 h-5 text-center text-gray-600"></p>
-    </div>
-
-    <div class="mt-12 pt-6 border-t border-red-300 text-center">
-      <h3 class="text-xl font-bold text-red-600 mb-3">Nebezpečná Zóna (Reštart)</h3>
-      <button id="confirm-delete-button" onclick="confirmDeletePoll()"
-        class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-150 active:scale-95 transform hover:shadow-xl">
+    <div class="mt-8 border-t border-gray-300 pt-4">
+      <h2 class="text-red-600 font-bold mb-2">Nebezpečná Zóna (Reštart)</h2>
+      <button id="resetPollBtn" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition">
         VYMAZAŤ ANKETU (Reštart)
       </button>
     </div>
 
-    <div id="loading" class="text-center text-blue-600 font-medium pt-8">
-      <div class="inline-block w-6 h-6 border-4 border-gray-200 border-t-4 border-t-blue-600 rounded-full spinner mr-2"></div>
-      Načítavam anketu a pripájam sa k databáze...
-    </div>
-    <div id="error-message" class="text-center text-red-600 font-medium hidden pt-8">
-      Chyba pri pripojení. Skúste obnoviť stránku.
-    </div>
-  </div>
-
-  <div id="delete-confirmation-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-100">
-      <h3 class="text-2xl font-bold text-red-600 mb-3">Naozaj vymazať?</h3>
-      <p class="text-gray-700 mb-6">Týmto sa natrvalo vymažú všetky hlasy a otázka v databáze, a anketa sa nanovo inicializuje s pôvodnou otázkou.</p>
-      <div class="flex justify-between space-x-4">
-        <button onclick="deletePoll()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition active:scale-95 shadow">
-          Áno, vymazať natrvalo
-        </button>
-        <button onclick="hideDeleteConfirmation()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 rounded-lg transition active:scale-95 shadow">
-          Zrušiť
-        </button>
-      </div>
-    </div>
+    <div id="status" class="text-sm text-gray-500 mt-4">Načítavam anketu a pripájam sa k databáze...</div>
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, onSnapshot, setDoc, updateDoc, increment, getDoc, runTransaction, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+    // ✅ Tvoj funkčný Firebase config
     const firebaseConfig = {
-      apiKey: "AIzaSyAfs4NluHtDInHgmD22DHYDLt6ypl008DU",
+      apiKey: "AIzaSyAf4s4NLuhtDInHgDnD22DHYDLt6yp10B0U",
       authDomain: "citanie-sv.firebaseapp.com",
       projectId: "citanie-sv",
       storageBucket: "citanie-sv.firebasestorage.app",
       messagingSenderId: "16378682541",
-      appId: "1:16378682541:web:be64c5a5fff65055657a24",
-      measurementId: "G-VM2CKF7QYS"
+      appId: "1:16378682541:web:be64c5a5fff6535565724",
+      measurementId: "G-VM2CKF7QY5"
     };
 
+    // Inicializácia
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app);
 
-    async function initFirebase() {
+    const questionBox = document.getElementById("questionBox");
+    const status = document.getElementById("status");
+    const changeQuestionBtn = document.getElementById("changeQuestionBtn");
+    const resetPollBtn = document.getElementById("resetPollBtn");
+
+    async function loadQuestion() {
       try {
-        await signInAnonymously(auth);
-        console.log("Firebase inicializované!");
+        const docRef = doc(db, "artifacts", "default-poll-app");
+        const snap = await getDoc(docRef);
+
+        if (snap.exists()) {
+          const data = snap.data();
+          questionBox.textContent = data.question || "Otázka nebola nastavená.";
+          status.textContent = "Pripojené k Firestore ✅";
+        } else {
+          questionBox.textContent = "Žiadna otázka v databáze.";
+          status.textContent = "Databáza je prázdna.";
+        }
       } catch (e) {
-        console.error("Chyba pri inicializácii:", e);
+        console.error(e);
+        questionBox.textContent = "Chyba načítania otázky.";
+        status.textContent = "❌ Chyba: " + e.message;
       }
     }
 
-    window.onload = initFirebase;
+    changeQuestionBtn.addEventListener("click", async () => {
+      const novaOtazka = prompt("Zadaj novú otázku:");
+      if (novaOtazka) {
+        try {
+          await updateDoc(doc(db, "artifacts", "default-poll-app"), { question: novaOtazka });
+          questionBox.textContent = novaOtazka;
+          status.textContent = "Otázka úspešne zmenená ✅";
+        } catch (e) {
+          console.error(e);
+          status.textContent = "❌ Nepodarilo sa zmeniť otázku.";
+        }
+      }
+    });
+
+    resetPollBtn.addEventListener("click", async () => {
+      if (confirm("Naozaj chceš vymazať anketu?")) {
+        try {
+          await setDoc(doc(db, "artifacts", "default-poll-app"), { question: "", userVotes: {} });
+          questionBox.textContent = "Otázka bola vymazaná.";
+          status.textContent = "Anketa reštartovaná 🔄";
+        } catch (e) {
+          console.error(e);
+          status.textContent = "❌ Chyba pri resete.";
+        }
+      }
+    });
+
+    loadQuestion();
   </script>
 </body>
 </html>
