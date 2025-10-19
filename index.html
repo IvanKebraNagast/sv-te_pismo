@@ -5,9 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="color-scheme" content="light dark">
     <title>Anketa čítanie svätého písma</title>
-    <!-- Načítanie Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Nastavenie fontu a základné štýly -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
         html { font-family: 'Inter', system-ui, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji'; }
@@ -20,7 +18,6 @@
             min-height: 100vh;
             padding: 20px;
         }
-        /* Štýl pre animáciu loading spinnera */
         .spinner {
             border-top-color: #3b82f6;
             animation: spinner 1.5s linear infinite;
@@ -29,18 +26,13 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        #delete-confirmation-modal {
-             transition: opacity 0.3s ease-out;
-        }
-        .btn {
-            font-bold py-3 px-4 rounded-xl shadow transform transition duration-150 active:scale-95 flex items-center justify-center text-lg
-        }
+        #delete-confirmation-modal { transition: opacity 0.3s ease-out; }
+        .btn { font-bold py-3 px-4 rounded-xl shadow transform transition duration-150 active:scale-95 flex items-center justify-center text-lg; }
     </style>
 </head>
 <body>
 
     <div id="app" class="w-full max-w-4xl p-6 md:p-10 bg-white shadow-2xl rounded-xl transition-all duration-300 mx-auto">
-        <!-- Hlavný nadpis -->
         <h1 class="text-4xl font-extrabold text-gray-800 mb-2 text-center flex items-center justify-center">
             <span class="mr-3 text-5xl">📖</span> Anketa čítanie svätého písma
         </h1>
@@ -49,25 +41,16 @@
             <p id="message-display" class="text-center text-base font-semibold text-gray-500"></p>
         </div>
 
-        <!-- Sekcia pre otázku -->
         <div class="space-y-6">
             <p id="question-display" class="text-2xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">Načíta sa otázka...</p>
-            
-            <!-- Sekcia pre výsledky a hlasovanie (dynamický obsah) -->
-            <div id="people-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 border-t pt-6">
-                <!-- Zoznam osôb a výsledkov sa vloží sem pomocou JavaScriptu -->
-            </div>
+            <div id="people-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 border-t pt-6"></div>
         </div>
         
-        <!-- Sekcia pre súhrn výsledkov -->
         <div id="total-summary-section" class="mt-8 pt-6 border-t border-gray-300">
             <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Súhrn hlasovania (väčšina hlasov)</h2>
-            <div id="total-summary" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                <!-- Súhrn sa vloží sem pomocou JS -->
-            </div>
+            <div id="total-summary" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4"></div>
         </div>
 
-        <!-- Tlačidlo pre zmenu otázky -->
         <div class="mt-8 pt-4 border-t text-center">
             <button id="toggle-editor-button" onclick="toggleQuestionEditor()"
                 class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-150 active:scale-95 transform hover:shadow-xl">
@@ -75,7 +58,6 @@
             </button>
         </div>
 
-        <!-- Sekcia pre editor otázky (spočiaku skrytá) -->
         <div id="question-editor" class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200 hidden">
             <h3 class="font-bold text-gray-700 mb-3 text-lg">Editor Otázky</h3>
             <textarea id="new-question-input" rows="2" 
@@ -95,7 +77,6 @@
             <p id="editor-message" class="text-sm pt-2 h-5 text-center text-gray-600"></p>
         </div>
         
-        <!-- Sekcia pre VYMAZANIE ANKETY -->
         <div class="mt-12 pt-6 border-t border-red-300 text-center">
             <h3 class="text-xl font-bold text-red-600 mb-3">Nebezpečná Zóna (Reštart)</h3>
             <button id="confirm-delete-button" onclick="confirmDeletePoll()"
@@ -104,8 +85,6 @@
             </button>
         </div>
 
-
-        <!-- Indikátor načítania/chyby -->
         <div id="loading" class="text-center text-blue-600 font-medium pt-8">
             <div class="inline-block w-6 h-6 border-4 border-gray-200 border-t-4 border-t-blue-600 rounded-full spinner mr-2"></div>
             Načítavam anketu a pripájam sa k databáze...
@@ -113,7 +92,6 @@
         <div id="error-message" class="text-center text-red-600 font-medium hidden pt-8">Chyba pri pripojení. Skúste obnoviť stránku.</div>
     </div>
     
-    <!-- POTVRDZOVACÍ MODAL (CUSTOM UI) -->
     <div id="delete-confirmation-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
         <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-100">
             <h3 class="text-2xl font-bold text-red-600 mb-3">Naozaj vymazať?</h3>
@@ -129,17 +107,12 @@
         </div>
     </div>
 
-
-    <!-- Firebase SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc, updateDoc, increment, getDoc, runTransaction, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        let db;
-        let auth;
-        let userId = 'anon'; 
-        let currentQuestion = "";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc, getDoc, runTransaction, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let db, auth, userId = "anon";
 
         const LOCAL_FIREBASE_CONFIG = {
             apiKey: "AIzaSyAfs4NluHtDInHgmD22DHYDLt6ypl008DU",
@@ -150,126 +123,90 @@
             appId: "1:16378682541:web:be64c5a5fff65055657a24",
             measurementId: "G-VM2CKF7QYS"
         };
-        
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-poll-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : LOCAL_FIREBASE_CONFIG;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-            
+
         const INITIAL_QUESTION = "Kto pravidelne číta Sväté Písmo?";
-        const PEOPLE = {
-            'adka': 'Aďka',
-            'danka': 'Danka',
-            'emilia': 'Emília',
-            'ivan': 'Ivan',
-            'janka': 'Janka',
-            'marketka': 'Markétka',
-            'milan': 'Milan'
-        };
+        const PEOPLE = { adka:"Aďka", danka:"Danka", emilia:"Emília", ivan:"Ivan", janka:"Janka", marketka:"Markétka", milan:"Milan" };
 
-        const questionDisplay = document.getElementById('question-display');
-        const peopleList = document.getElementById('people-list');
-        const loadingDiv = document.getElementById('loading');
-        const errorDiv = document.getElementById('error-message');
-        const messageDisplay = document.getElementById('message-display');
-        const questionEditor = document.getElementById('question-editor');
-        const toggleEditorButton = document.getElementById('toggle-editor-button');
-        const newQuestionInput = document.getElementById('new-question-input');
-        const editorMessage = document.getElementById('editor-message');
-        const totalSummary = document.getElementById('total-summary');
-        const deleteConfirmationModal = document.getElementById('delete-confirmation-modal');
-
-        function getPollDocRef(db, appId) {
-            return doc(db, "artifacts", appId, "public", "data", "polls", "svate_pismo");
+        function getPollDocRef(db) {
+            return doc(db, "polls", "svate_pismo");
         }
 
         let skVoice = null;
         const loadVoices = () => {
-            const voices = window.speechSynthesis.getVoices();
-            skVoice = voices.find(v => v.lang === 'sk-SK') || voices.find(v => v.lang.startsWith('cs-'));
+            const v = window.speechSynthesis.getVoices();
+            skVoice = v.find(x => x.lang === "sk-SK") || v.find(x => x.lang.startsWith("cs-"));
         };
         if ('speechSynthesis' in window) {
             if (window.speechSynthesis.onvoiceschanged !== undefined) window.speechSynthesis.onvoiceschanged = loadVoices;
             loadVoices();
         }
 
-        window.playNativeAudio = function(text) {
+        function playNativeAudio(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                const utter = new SpeechSynthesisUtterance(text);
-                if (skVoice) utter.voice = skVoice;
-                utter.lang = 'sk-SK';
-                utter.rate = 0.9;
-                window.speechSynthesis.speak(utter);
+                const u = new SpeechSynthesisUtterance(text);
+                if (skVoice) u.voice = skVoice;
+                u.lang = "sk-SK";
+                u.rate = 0.9;
+                window.speechSynthesis.speak(u);
             }
         }
 
         async function initFirebase() {
-            loadingDiv.classList.remove('hidden');
-            try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                if (initialAuthToken) await signInWithCustomToken(auth, initialAuthToken);
-                else await signInAnonymously(auth);
-                userId = auth.currentUser?.uid || crypto.randomUUID();
-                await checkAndInitializePoll();
-                setupRealtimeListener();
-            } catch (e) {
-                errorDiv.textContent = `Chyba: ${e.message}`;
-                errorDiv.classList.remove('hidden');
-            }
+            const app = initializeApp(LOCAL_FIREBASE_CONFIG);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            await signInAnonymously(auth);
+            userId = auth.currentUser?.uid || crypto.randomUUID();
+            await checkAndInitializePoll();
+            setupRealtimeListener();
         }
 
         async function checkAndInitializePoll() {
-            const ref = getPollDocRef(db, appId);
+            const ref = getPollDocRef(db);
             const snap = await getDoc(ref);
             if (!snap.exists()) {
-                const p = {};
-                Object.keys(PEOPLE).forEach(k => p[k] = { yes:0, no:0 });
-                await setDoc(ref, { question: INITIAL_QUESTION, people: p, userVotes:{} });
+                const data = { question: INITIAL_QUESTION, people: {}, userVotes: {} };
+                Object.keys(PEOPLE).forEach(k => data.people[k] = { yes: 0, no: 0 });
+                await setDoc(ref, data);
             }
         }
 
         function setupRealtimeListener() {
-            const ref = getPollDocRef(db, appId);
-            onSnapshot(ref, s => { loadingDiv.classList.add('hidden'); if (s.exists()) render(s.data()); });
+            const ref = getPollDocRef(db);
+            onSnapshot(ref, (snap) => {
+                if (snap.exists()) render(snap.data());
+            });
         }
 
         function render(data) {
-            currentQuestion = data.question || INITIAL_QUESTION;
-            questionDisplay.textContent = currentQuestion;
+            const questionDisplay = document.getElementById('question-display');
+            const peopleList = document.getElementById('people-list');
+            questionDisplay.textContent = data.question;
+            peopleList.innerHTML = '';
             const userVotes = data.userVotes?.[userId] || {};
             const people = data.people || {};
-            peopleList.innerHTML = ''; totalSummary.innerHTML = '';
             Object.keys(PEOPLE).forEach(k => {
-                const n = PEOPLE[k]; const v = people[k] || { yes:0, no:0 }; const total = v.yes + v.no;
-                const my = userVotes[k] || "none";
-                const votedHtml = my==="yes"?`<div class="text-center p-3 bg-green-50 border-2 border-green-500 rounded-lg shadow-inner mb-4"><span class="text-3xl">😇👍</span><p class="text-sm font-semibold text-green-700 mt-1">Tvoj hlas: ÁNO</p></div>`:
-                    my==="no"?`<div class="text-center p-3 bg-red-50 border-2 border-red-500 rounded-lg shadow-inner mb-4"><span class="text-3xl">😔👎</span><p class="text-sm font-semibold text-red-700 mt-1">Tvoj hlas: NIE</p></div>`:
-                    `<div class="text-center p-3 bg-gray-50 border-2 border-gray-300 rounded-lg mb-4"><p class="text-sm font-semibold text-gray-500">Zatiaľ si nehlasoval/a.</p></div>`;
-                const yp = total?Math.round(v.yes/total*100):0; const np=100-yp;
-                const cardHtml=`<div class="p-4 bg-white rounded-xl shadow-lg border border-gray-100">
-                <h2 class="text-xl font-bold text-center mb-4 text-gray-800">${n}</h2>${votedHtml}
-                <div class="flex gap-2 mb-3">
-                    <button class="btn flex-1 text-white ${my==='yes'?'bg-green-700 ring-yes':'bg-green-500 hover:bg-green-600'}" onclick="handleVote('${k}','yes')">✅ Áno</button>
-                    <button class="btn flex-1 text-white ${my==='no'?'bg-red-700 ring-no':'bg-red-500 hover:bg-red-600'}" onclick="handleVote('${k}','no')">❌ Nie</button>
-                </div>
-                <div class="flex justify-between text-sm"><span class="text-green-600">Áno: ${yp}% (${v.yes})</span><span class="text-red-600">Nie: ${np}% (${v.no})</span></div></div>`;
-                peopleList.insertAdjacentHTML('beforeend', cardHtml);
+                const n = PEOPLE[k], v = people[k] || { yes:0,no:0 }, my = userVotes[k] || "none";
+                const card = `<div class="p-4 bg-white rounded-xl shadow-lg border">
+                    <h2 class="text-xl font-bold text-center mb-4">${n}</h2>
+                    ${my==="yes"?"<div class='text-center mb-2 text-green-600'>😇👍 Tvoj hlas: ÁNO</div>":my==="no"?"<div class='text-center mb-2 text-red-600'>😔👎 Tvoj hlas: NIE</div>":"<div class='text-center text-gray-500 mb-2'>Zatiaľ si nehlasoval/a.</div>"}
+                    <div class='flex gap-2'>
+                        <button class='flex-1 bg-green-600 text-white py-2 rounded-lg' onclick=\"handleVote('${k}','yes')\">✅ Áno</button>
+                        <button class='flex-1 bg-red-600 text-white py-2 rounded-lg' onclick=\"handleVote('${k}','no')\">❌ Nie</button>
+                    </div>
+                </div>`;
+                peopleList.insertAdjacentHTML('beforeend', card);
             });
         }
 
         window.handleVote = async (personKey,newVote)=>{
-            const ref=getPollDocRef(db,appId);
+            const ref=getPollDocRef(db);
             const personName=PEOPLE[personKey];
-            let ttsMessage="";
             try{
                 await runTransaction(db,async tx=>{
-                    const ds=await tx.get(ref);
-                    if(!ds.exists())throw new Error("Dokument ankety neexistuje.");
-                    const data=ds.data();const prev=data.userVotes?.[userId]?.[personKey];
+                    const snap=await tx.get(ref);
+                    const data=snap.data();const prev=data.userVotes?.[userId]?.[personKey];
                     if(prev===newVote)throw new Error("rovnaky");
                     const upd={};
                     if(prev==="yes")upd[`people.${personKey}.yes`]=increment(-1);
@@ -278,21 +215,17 @@
                     upd[`userVotes.${userId}.${personKey}`]=newVote;
                     tx.update(ref,upd);
                 });
-                ttsMessage=newVote==="yes"?`${personName}, ďakujem ti za tvoj hlas ÁNO. Stretneme sa pri čítaní svätého písma. Boh ti žehnaj.`:`${personName} veľmi ma mrzí, že ti situácia nedovoľuje zúčastniť sa čítania svätého písma. Boh ti žehnaj.`;
-                playNativeAudio(ttsMessage);
+                const msg=newVote==="yes"?`${personName}, ďakujem ti za tvoj hlas ÁNO. Stretneme sa pri čítaní svätého písma. Boh ti žehnaj.`:`${personName} veľmi ma mrzí, že ti situácia nedovoľuje zúčastniť sa čítania svätého písma. Boh ti žehnaj.`;
+                playNativeAudio(msg);
             }catch(e){
                 if(e.message==="rovnaky"){
-                    ttsMessage=newVote==="yes"?`${personName}, ďakujem ti za tvoj hlas ÁNO. Stretneme sa pri čítaní svätého písma. Boh ti žehnaj.`:`${personName} veľmi ma mrzí, že ti situácia nedovoľuje zúčastniť sa čítania svätého písma. Boh ti žehnaj.`;
-                    playNativeAudio(ttsMessage);
+                    const msg=newVote==="yes"?`${personName}, ďakujem ti za tvoj hlas ÁNO. Stretneme sa pri čítaní svätého písma. Boh ti žehnaj.`:`${personName} veľmi ma mrzí, že ti situácia nedovoľuje zúčastniť sa čítania svätého písma. Boh ti žehnaj.`;
+                    playNativeAudio(msg);
                 }
             }
         };
 
-        window.confirmDeletePoll=()=>deleteConfirmationModal.classList.remove('hidden');
-        window.hideDeleteConfirmation=()=>deleteConfirmationModal.classList.add('hidden');
-        window.deletePoll=async()=>{const r=getPollDocRef(db,appId);await deleteDoc(r);await checkAndInitializePoll();};
-
-        // ✅ Povolenie TTS na GitHub Pages (nutné pre Chrome)
+        // ✅ TTS inicializácia pre GitHub Pages
         window.addEventListener('click',()=>{
             try{
                 const initVoice=new SpeechSynthesisUtterance('Inicializácia hlasu');
