@@ -32,27 +32,23 @@
         #delete-confirmation-modal {
             transition: opacity 0.3s ease-out;
         }
-        /* Štýl pre hlavný kontajner, aby bol pekný a centrovaný na všetkých zariadeniach */
-        #app {
-            max-width: 90%; /* Zabezpečí dobré zobrazenie na mobiloch */
-        }
     </style>
 </head>
 <body>
 
     <div id="app" class="w-full max-w-4xl p-6 md:p-10 bg-white shadow-2xl rounded-xl transition-all duration-300 mx-auto">
         <!-- Hlavný nadpis -->
-        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2 text-center flex items-center justify-center">
-            <span class="mr-3 text-4xl md:text-5xl text-yellow-500">📖</span> Anketa čítanie Svätého Písma
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-2 text-center flex items-center justify-center">
+            <span class="mr-3 text-5xl">📖</span> Anketa čítanie svätého písma
         </h1>
 
         <div id="main-message-container" class="text-center mt-2 flex justify-center h-6">
-            <p id="message-display" class="text-center text-sm font-semibold text-gray-500"></p>
+            <p id="message-display" class="text-center text-base font-semibold text-gray-500"></p>
         </div>
 
         <!-- Sekcia pre otázku -->
         <div class="space-y-6">
-            <p id="question-display" class="text-xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">Načíta sa otázka...</p>
+            <p id="question-display" class="text-2xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">Načíta sa otázka...</p>
             
             <!-- Sekcia pre výsledky a hlasovanie (dynamický obsah) -->
             <div id="people-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 border-t pt-6">
@@ -62,8 +58,8 @@
         
         <!-- Sekcia pre súhrn výsledkov -->
         <div id="total-summary-section" class="mt-8 pt-6 border-t border-gray-300">
-            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 text-center">Súhrn hlasovania (väčšina hlasov)</h2>
-            <div id="total-summary" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Súhrn hlasovania (väčšina hlasov)</h2>
+            <div id="total-summary" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
                 <!-- Súhrn sa vloží sem pomocou JS -->
             </div>
         </div>
@@ -149,7 +145,7 @@
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
         // Konštanta pre cestu k dokumentu ankety (Public data)
-        const POLL_DOC_PATH = `artifacts/${appId}/public/data/polls/team_poll`; 
+        const POLL_DOC_PATH = `artifacts/${appId}/public/data/polls/team_poll`;	
         const INITIAL_QUESTION = "Kto pravidelne číta Sväté Písmo?";
 
         // Štruktúra mien a kľúčov pre databázu
@@ -173,7 +169,7 @@
         const toggleEditorButton = document.getElementById('toggle-editor-button');
         const newQuestionInput = document.getElementById('new-question-input');
         const editorMessage = document.getElementById('editor-message');
-        const totalSummary = document.getElementById('total-summary'); 
+        const totalSummary = document.getElementById('total-summary');	
         const deleteConfirmationModal = document.getElementById('delete-confirmation-modal');
         let currentQuestion = INITIAL_QUESTION;
 
@@ -184,14 +180,10 @@
         const loadVoices = () => {
             const voices = window.speechSynthesis.getVoices();
             // Najprv skúsime sk-SK
-            skVoice = voices.find(voice => voice.lang === 'sk-SK'); 
+            skVoice = voices.find(voice => voice.lang === 'sk-SK');	
             if (!skVoice) {
                 // Fallback na český hlas (cs-CZ), ak slovenský nie je dostupný
                 skVoice = voices.find(voice => voice.lang.startsWith('cs-'));
-            }
-            // Fallback na akýkoľvek EN hlas, ak nie je SK/CZ
-            if (!skVoice) {
-                skVoice = voices.find(voice => voice.lang.startsWith('en-'));
             }
         };
 
@@ -201,7 +193,7 @@
                 window.speechSynthesis.onvoiceschanged = loadVoices;
             }
             // A tiež ich skúsime načítať hneď
-            loadVoices(); 
+            loadVoices();	
         }
 
         /**
@@ -211,21 +203,21 @@
         window.playNativeAudio = function(text) {
             if ('speechSynthesis' in window) {
                 // Zastavíme predošlé čítanie
-                window.speechSynthesis.cancel(); 
+                window.speechSynthesis.cancel();	
 
                 const utterance = new SpeechSynthesisUtterance(text);
                 
                 if (skVoice) {
                     utterance.voice = skVoice;
                     // Nastavíme jazyk podľa nájdeného hlasu (sk-SK alebo cs-CZ)
-                    utterance.lang = skVoice.lang; 
+                    utterance.lang = skVoice.lang;	
                 } else {
                     // Ak hlas nebol nájdený, nastavíme aspoň jazyk na 'sk-SK'
-                    utterance.lang = 'sk-SK'; 
+                    utterance.lang = 'sk-SK';	
                 }
 
                 // Nastavíme rýchlosť reči trochu pomalšie
-                utterance.rate = 0.9; 
+                utterance.rate = 0.9;	
                 
                 window.speechSynthesis.speak(utterance);
             } else {
@@ -260,9 +252,7 @@
                 }
                 
                 // Používame UID pre sledovanie individuálnych hlasov
-                // crypto.randomUUID() funguje len v moderných prehliadačoch, pre staršie sa to spraví ručne
-                const generateRandomId = () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-                userId = auth.currentUser?.uid || (window.crypto?.randomUUID ? window.crypto.randomUUID() : generateRandomId());
+                userId = auth.currentUser?.uid || crypto.randomUUID();
                 
                 console.log("Firebase inicializované. User ID:", userId);
 
@@ -291,11 +281,10 @@
                     initialPeopleData[key] = { yes: 0, no: 0 };
                 });
 
-                // Nastavenie počtu hlasov na 0, userVotes je prázdny
                 await setDoc(pollRef, {
                     question: INITIAL_QUESTION,
                     people: initialPeopleData,
-                    userVotes: {}, 
+                    userVotes: {},	
                 });
             }
         }
@@ -315,7 +304,7 @@
                     renderPoll(data);
                 } else {
                     // Ak dokument neexistuje (bol vymazaný), skúsime ho znova inicializovať.
-                    checkAndInitializePoll(); 
+                    checkAndInitializePoll();	
                     questionDisplay.textContent = "Anketa bola reštartovaná. Načítavam...";
                 }
             }, (error) => {
@@ -333,18 +322,18 @@
             // Aktualizácia otázky
             currentQuestion = data.question || INITIAL_QUESTION;
             questionDisplay.textContent = currentQuestion;
-            newQuestionInput.value = currentQuestion; 
+            newQuestionInput.value = currentQuestion;	
 
             const peopleData = data.people || {};
             const allUserVotes = data.userVotes || {};
             const currentUserVotes = allUserVotes[userId] || {};
             
-            peopleList.innerHTML = ''; 
-            totalSummary.innerHTML = ''; 
+            peopleList.innerHTML = '';	
+            totalSummary.innerHTML = '';	
 
             Object.keys(PEOPLE).forEach(key => {
                 const displayName = PEOPLE[key];
-                const votes = peopleData[key] || { yes: 0, no: 0 }; 
+                const votes = peopleData[key] || { yes: 0, no: 0 };	
                 const yesCount = votes.yes || 0;
                 const noCount = votes.no || 0;
                 const total = yesCount + noCount;
@@ -358,7 +347,7 @@
                 }
 
                 // Zistenie aktuálneho hlasu používateľa
-                const userVoteStatus = currentUserVotes[key] || 'none'; 
+                const userVoteStatus = currentUserVotes[key] || 'none';	
                 
                 let voteStatusHtml = '';
                 
@@ -367,14 +356,14 @@
                     // Pozitívny emotikon so svätožiarou a palcom hore
                     voteStatusHtml = `
                         <div class="text-center p-3 bg-green-50 border-2 border-green-500 rounded-lg shadow-inner mb-4">
-                            <span class="text-4xl">😇👍</span> 
+                            <span class="text-4xl">😇👍</span>	
                             <p class="text-sm font-semibold text-green-700 mt-1">Tvoj hlas: ÁNO</p>
                         </div>`;
                 } else if (userVoteStatus === 'no') {
                     // Smutný emotikon s palcom dole
                     voteStatusHtml = `
                         <div class="text-center p-3 bg-red-50 border-2 border-red-500 rounded-lg shadow-inner mb-4">
-                            <span class="text-4xl">😔👎</span> 
+                            <span class="text-4xl">😔👎</span>	
                             <p class="text-sm font-semibold text-red-700 mt-1">Tvoj hlas: NIE</p>
                         </div>`;
                 } else {
@@ -384,9 +373,8 @@
                         </div>`;
                 }
                 
-                // HTML pre meno osoby (použijeme farby pre rozlíšenie)
-                const nameColor = (key.endsWith('a') || key.endsWith('ka')) ? 'text-pink-600' : 'text-indigo-600';
-                const personNameHtml = `<h2 class="text-xl font-bold ${nameColor}">${displayName}</h2>`;
+                // HTML pre meno osoby
+                const personNameHtml = `<h2 class="text-xl font-bold text-gray-800">${displayName}</h2>`;
 
                 // Vytvorenie HTML pre každú osobu
                 const personHtml = `
@@ -433,7 +421,7 @@
                 // --- LOGIKA A VYKRESLENIE SÚHRNU ---
                 let summaryStatusClass = 'bg-gray-100 text-gray-600 border-gray-300';
                 let summaryIcon = '⚪'; // neutrálny emotikon
-                let summaryText = 'Remíza / Nula';
+                let summaryText = 'Remíza';
 
                 if (yesCount > noCount) {
                     summaryStatusClass = 'bg-green-100 text-green-700 border-green-500';
@@ -447,8 +435,8 @@
                 
                 const summaryHtml = `
                     <div class="p-3 rounded-xl border-2 ${summaryStatusClass} flex flex-col items-center justify-center text-center transition-all duration-300 transform hover:scale-[1.05] shadow-sm">
-                        <p class="text-sm md:text-lg font-semibold ${nameColor}">${displayName}</p>
-                        <p class="text-xl md:text-2xl font-extrabold mt-1">${summaryIcon} ${summaryText}</p>
+                        <p class="text-lg font-semibold">${displayName}</p>
+                        <p class="text-2xl font-extrabold mt-1">${summaryIcon} ${summaryText}</p>
                     </div>
                 `;
                 totalSummary.insertAdjacentHTML('beforeend', summaryHtml);
@@ -494,22 +482,17 @@
                 await deleteDoc(pollRef);
                 
                 // 2. Manuálna re-inicializácia po vymazaní (onSnapshot by to urobil aj sám, ale pre istotu)
-                // Dávame sem timeout, aby sme dali priestor listeneru na zachytenie zmeny
-                setTimeout(async () => {
-                    await checkAndInitializePoll(); 
-                    messageDisplay.textContent = "Anketa bola úspešne vymazaná a reštartovaná!";
-                    setTimeout(() => {
-                         messageDisplay.textContent = ''; 
-                    }, 3000);
-                }, 1000); // 1 sekunda oneskorenia
-
+                await checkAndInitializePoll();	
+                
+                messageDisplay.textContent = "Anketa bola úspešne vymazaná a reštartovaná!";
                 
             } catch (error) {
                 console.error("Chyba pri mazaní ankety:", error);
                 messageDisplay.textContent = `Chyba pri mazaní ankety: ${error.message}`;
-                 setTimeout(() => {
-                    messageDisplay.textContent = ''; 
-                }, 3000);
+            } finally {
+                setTimeout(() => {
+                    messageDisplay.textContent = '';	
+                }, 3000);	
             }
         }
         
@@ -559,7 +542,7 @@
                 editorMessage.textContent = "Otázka bola úspešne uložená a aktualizovaná!";
                 setTimeout(() => {
                     toggleQuestionEditor(true);
-                }, 1500); 
+                }, 1500);	
 
             } catch (error) {
                 console.error("Chyba pri ukladaní otázky:", error);
@@ -617,7 +600,7 @@
                     
                     if (previousVote === newVote) {
                         // Hlas je rovnaký, nerobíme nič (transakcia sa zopakuje)
-                        throw "Hlas sa nezmenil, nie je potrebné aktualizovať databázu."; 
+                        throw "Hlas sa nezmenil, nie je potrebné aktualizovať databázu.";	
                     }
 
                     // Dekrement predchádzajúceho hlasu (ak existoval)
@@ -652,8 +635,8 @@
             } finally {
                 // Vyčistenie správy
                 setTimeout(() => {
-                    messageDisplay.textContent = ''; 
-                }, 3000); 
+                    messageDisplay.textContent = '';	
+                }, 3000);	
             }
         }
 
