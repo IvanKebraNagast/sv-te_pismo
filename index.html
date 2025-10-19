@@ -39,7 +39,8 @@
       <p id="message-display" class="text-center text-base font-semibold text-gray-500"></p>
     </div>
 
-    <p id="question-display" class="text-2xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">
+    <p id="question-display"
+      class="text-2xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">
       Načíta sa otázka...
     </p>
 
@@ -67,12 +68,32 @@
     </div>
   </div>
 
+  <!-- Potvrdzovací modal -->
+  <div id="delete-confirmation-modal"
+    class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-100">
+      <h3 class="text-2xl font-bold text-red-600 mb-3">Naozaj vymazať?</h3>
+      <p class="text-gray-700 mb-6">Týmto sa natrvalo vymažú všetky hlasy a otázka v databáze, a anketa sa nanovo
+        inicializuje s pôvodnou otázkou.</p>
+      <div class="flex justify-between space-x-4">
+        <button onclick="deletePoll()"
+          class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition active:scale-95 shadow">
+          Áno, vymazať natrvalo
+        </button>
+        <button onclick="hideDeleteConfirmation()"
+          class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 rounded-lg transition active:scale-95 shadow">
+          Zrušiť
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, runTransaction, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // 🔥 tvoje pôvodné Firebase API
+    // 🔥 Tvoje pôvodné Firebase API
     const firebaseConfig = {
       apiKey: "AIzaSyAfs4NluHtDInHgmD22DHYDLt6ypl008DU",
       authDomain: "citanie-sv.firebaseapp.com",
@@ -87,7 +108,16 @@
     let auth;
     let userId = 'anon';
 
-    // ✅ OPRAVA – správna cesta pre GitHub Pages aj lokálne
+    const PEOPLE = {
+      'adka': 'Aďka',
+      'danka': 'Danka',
+      'emilia': 'Emília',
+      'ivan': 'Ivan',
+      'janka': 'Janka',
+      'marketka': 'Markétka',
+      'milan': 'Milan'
+    };
+
     function getPollDocRef(db) {
       return doc(db, "polls", "svate_pismo");
     }
@@ -107,15 +137,8 @@
       const pollRef = getPollDocRef(db);
       const snap = await getDoc(pollRef);
       if (!snap.exists()) {
-        const initialPeople = {
-          adka: { yes: 0, no: 0 },
-          danka: { yes: 0, no: 0 },
-          emilia: { yes: 0, no: 0 },
-          ivan: { yes: 0, no: 0 },
-          janka: { yes: 0, no: 0 },
-          marketka: { yes: 0, no: 0 },
-          milan: { yes: 0, no: 0 }
-        };
+        const initialPeople = {};
+        Object.keys(PEOPLE).forEach(k => initialPeople[k] = { yes: 0, no: 0 });
         await setDoc(pollRef, {
           question: "Kto pravidelne číta Sväté Písmo?",
           people: initialPeople,
@@ -137,14 +160,16 @@
       const list = document.getElementById("people-list");
       list.innerHTML = "";
       for (const [key, value] of Object.entries(people)) {
+        const name = PEOPLE[key] || key;
         const yes = value.yes || 0;
         const no = value.no || 0;
         const total = yes + no;
         const yp = total ? Math.round((yes / total) * 100) : 0;
         const np = total ? 100 - yp : 0;
+
         list.innerHTML += `
           <div class="p-4 bg-white rounded-xl shadow-lg border text-center">
-            <h2 class="text-xl font-bold text-gray-800 mb-2">${key.charAt(0).toUpperCase() + key.slice(1)}</h2>
+            <h2 class="text-xl font-bold text-gray-800 mb-2">${name}</h2>
             <p class="mb-2 text-sm text-gray-600">Áno: ${yp}% (${yes}) | Nie: ${np}% (${no})</p>
             <div class="flex gap-2 mt-2">
               <button class="flex-1 bg-green-500 text-white rounded-lg py-2" onclick="handleVote('${key}','yes')">✅ Áno</button>
@@ -171,16 +196,22 @@
     };
 
     window.confirmDeletePoll = () => {
-      deletePoll();
+      document.getElementById("delete-confirmation-modal").classList.remove("hidden");
+      document.getElementById("delete-confirmation-modal").classList.add("flex");
     };
 
-    async function deletePoll() {
+    window.hideDeleteConfirmation = () => {
+      document.getElementById("delete-confirmation-modal").classList.add("hidden");
+      document.getElementById("delete-confirmation-modal").classList.remove("flex");
+    };
+
+    window.deletePoll = async () => {
       const ref = getPollDocRef(db);
       await deleteDoc(ref);
       await checkAndInitializePoll();
-    }
+      hideDeleteConfirmation();
+    };
 
-    // ✅ Spúšťame inicializáciu správne (aj na GitHub Pages)
     window.addEventListener("load", () => initFirebase());
   </script>
 </body>
