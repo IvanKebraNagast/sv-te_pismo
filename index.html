@@ -7,7 +7,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
-    html { font-family: 'Inter', system-ui, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji'; }
+    html {
+      font-family: 'Inter', system-ui, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
+    }
     body {
       background-color: #f3f4f6;
       display: flex;
@@ -37,8 +39,7 @@
       <p id="message-display" class="text-center text-base font-semibold text-gray-500"></p>
     </div>
 
-    <p id="question-display"
-      class="text-2xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">
+    <p id="question-display" class="text-2xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">
       Načíta sa otázka...
     </p>
 
@@ -47,31 +48,6 @@
     <div id="total-summary-section" class="mt-8 pt-6 border-t border-gray-300">
       <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Súhrn hlasovania (väčšina hlasov)</h2>
       <div id="total-summary" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4"></div>
-    </div>
-
-    <div class="mt-8 pt-4 border-t text-center">
-      <button id="toggle-editor-button" onclick="toggleQuestionEditor()"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-150 active:scale-95 transform hover:shadow-xl">
-        Zmeniť otázku
-      </button>
-    </div>
-
-    <div id="question-editor" class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200 hidden">
-      <h3 class="font-bold text-gray-700 mb-3 text-lg">Editor Otázky</h3>
-      <textarea id="new-question-input" rows="2"
-        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-3 text-gray-700 shadow-inner"
-        placeholder="Sem zadajte novú otázku..."></textarea>
-      <div class="flex justify-end space-x-2">
-        <button onclick="saveQuestion()"
-          class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 active:scale-95 shadow">
-          Uložiť zmenu
-        </button>
-        <button onclick="toggleQuestionEditor(true)"
-          class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 active:scale-95 shadow">
-          Zrušiť
-        </button>
-      </div>
-      <p id="editor-message" class="text-sm pt-2 h-5 text-center text-gray-600"></p>
     </div>
 
     <div class="mt-12 pt-6 border-t border-red-300 text-center">
@@ -86,34 +62,17 @@
       <div class="inline-block w-6 h-6 border-4 border-gray-200 border-t-4 border-t-blue-600 rounded-full spinner mr-2"></div>
       Načítavam anketu a pripájam sa k databáze...
     </div>
-    <div id="error-message" class="text-center text-red-600 font-medium hidden pt-8">Chyba pri pripojení. Skúste obnoviť
-      stránku.</div>
-  </div>
-
-  <div id="delete-confirmation-modal"
-    class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-100">
-      <h3 class="text-2xl font-bold text-red-600 mb-3">Naozaj vymazať?</h3>
-      <p class="text-gray-700 mb-6">Týmto sa natrvalo vymažú všetky hlasy a otázka v databáze, a anketa sa nanovo
-        inicializuje s pôvodnou otázkou.</p>
-      <div class="flex justify-between space-x-4">
-        <button onclick="deletePoll()"
-          class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition active:scale-95 shadow">
-          Áno, vymazať natrvalo
-        </button>
-        <button onclick="hideDeleteConfirmation()"
-          class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 rounded-lg transition active:scale-95 shadow">
-          Zrušiť
-        </button>
-      </div>
+    <div id="error-message" class="text-center text-red-600 font-medium hidden pt-8">
+      Chyba pri pripojení. Skúste obnoviť stránku.
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, onSnapshot, setDoc, updateDoc, increment, getDoc, runTransaction, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, runTransaction, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+    // 🔥 tvoje pôvodné Firebase API
     const firebaseConfig = {
       apiKey: "AIzaSyAfs4NluHtDInHgmD22DHYDLt6ypl008DU",
       authDomain: "citanie-sv.firebaseapp.com",
@@ -128,7 +87,7 @@
     let auth;
     let userId = 'anon';
 
-    // ✅ FUNGUJÚCA CESTA PRE GITHUB PAGES
+    // ✅ OPRAVA – správna cesta pre GitHub Pages aj lokálne
     function getPollDocRef(db) {
       return doc(db, "polls", "svate_pismo");
     }
@@ -139,16 +98,29 @@
       auth = getAuth(app);
       await signInAnonymously(auth);
       userId = auth.currentUser?.uid || crypto.randomUUID();
-      checkAndInitializePoll();
+
+      await checkAndInitializePoll();
       setupRealtimeListener();
     }
 
     async function checkAndInitializePoll() {
       const pollRef = getPollDocRef(db);
-      const pollSnap = await getDoc(pollRef);
-      if (!pollSnap.exists()) {
-        const initialPeopleData = { adka: { yes: 0, no: 0 }, danka: { yes: 0, no: 0 }, emilia: { yes: 0, no: 0 }, ivan: { yes: 0, no: 0 }, janka: { yes: 0, no: 0 }, marketka: { yes: 0, no: 0 }, milan: { yes: 0, no: 0 } };
-        await setDoc(pollRef, { question: "Kto pravidelne číta Sväté Písmo?", people: initialPeopleData, userVotes: {} });
+      const snap = await getDoc(pollRef);
+      if (!snap.exists()) {
+        const initialPeople = {
+          adka: { yes: 0, no: 0 },
+          danka: { yes: 0, no: 0 },
+          emilia: { yes: 0, no: 0 },
+          ivan: { yes: 0, no: 0 },
+          janka: { yes: 0, no: 0 },
+          marketka: { yes: 0, no: 0 },
+          milan: { yes: 0, no: 0 }
+        };
+        await setDoc(pollRef, {
+          question: "Kto pravidelne číta Sväté Písmo?",
+          people: initialPeople,
+          userVotes: {}
+        });
       }
     }
 
@@ -162,16 +134,21 @@
 
     function render(data) {
       const people = data.people;
-      const container = document.getElementById("people-list");
-      container.innerHTML = "";
+      const list = document.getElementById("people-list");
+      list.innerHTML = "";
       for (const [key, value] of Object.entries(people)) {
-        container.innerHTML += `
+        const yes = value.yes || 0;
+        const no = value.no || 0;
+        const total = yes + no;
+        const yp = total ? Math.round((yes / total) * 100) : 0;
+        const np = total ? 100 - yp : 0;
+        list.innerHTML += `
           <div class="p-4 bg-white rounded-xl shadow-lg border text-center">
             <h2 class="text-xl font-bold text-gray-800 mb-2">${key.charAt(0).toUpperCase() + key.slice(1)}</h2>
-            <p>Áno: ${value.yes} | Nie: ${value.no}</p>
+            <p class="mb-2 text-sm text-gray-600">Áno: ${yp}% (${yes}) | Nie: ${np}% (${no})</p>
             <div class="flex gap-2 mt-2">
-              <button class="flex-1 bg-green-500 text-white rounded-lg py-1" onclick="handleVote('${key}','yes')">Áno</button>
-              <button class="flex-1 bg-red-500 text-white rounded-lg py-1" onclick="handleVote('${key}','no')">Nie</button>
+              <button class="flex-1 bg-green-500 text-white rounded-lg py-2" onclick="handleVote('${key}','yes')">✅ Áno</button>
+              <button class="flex-1 bg-red-500 text-white rounded-lg py-2" onclick="handleVote('${key}','no')">❌ Nie</button>
             </div>
           </div>`;
       }
@@ -193,12 +170,17 @@
       });
     };
 
-    window.deletePoll = async () => {
+    window.confirmDeletePoll = () => {
+      deletePoll();
+    };
+
+    async function deletePoll() {
       const ref = getPollDocRef(db);
       await deleteDoc(ref);
       await checkAndInitializePoll();
-    };
+    }
 
+    // ✅ Spúšťame inicializáciu správne (aj na GitHub Pages)
     window.addEventListener("load", () => initFirebase());
   </script>
 </body>
