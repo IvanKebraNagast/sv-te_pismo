@@ -30,24 +30,12 @@
         #delete-confirmation-modal {
              transition: opacity 0.3s ease-out;
         }
-        /* Oprava: Ponecháme len Tailwind triedy v HTML, nie v CSS */
+        /* Oprava chýbajúceho štýlu pre button */
         .btn {
-            font-weight: 600; /* font-semibold */
-            padding-top: 0.75rem; /* py-3 */
-            padding-bottom: 0.75rem; /* py-3 */
-            padding-left: 1rem; /* px-4 */
-            padding-right: 1rem; /* px-4 */
-            border-radius: 0.75rem; /* rounded-xl */
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow */
-            transform: scale(1); /* transform */
-            transition: all 150ms ease-in-out; /* transition duration-150 */
-            display: flex; /* flex */
-            align-items: center; /* items-center */
-            justify-content: center; /* justify-center */
-            font-size: 1.125rem; /* text-lg */
+             font-weight: bold; padding-top: 0.75rem; padding-bottom: 0.75rem; padding-left: 1rem; padding-right: 1rem; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); transition-duration: 150ms; transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transform: scale(1); display: flex; align-items: center; justify-content: center; font-size: 1.125rem; /* text-lg */
         }
         .btn:active {
-            transform: scale(0.95); /* active:scale-95 */
+            transform: scale(0.95);
         }
     </style>
 </head>
@@ -144,29 +132,37 @@
     </div>
 
 
-    <!-- Firebase SCRIPT -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc, updateDoc, increment, getDoc, runTransaction, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <!-- Firebase SCRIPT (Upravené pre kompatibilitu s GitHub Pages) -->
+    <!-- Firebase kompatibilné knižnice (fungujú aj na GitHub Pages) -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script>
         
-        // setLogLevel('debug'); // Pridáme logovanie pre lepšie ladenie, ak by bolo potrebné
-
+        // Funkcie Firebase sú teraz dostupné globálne cez objekt 'firebase'
         let db;
         let auth;
         let userId = 'anon'; 
         let currentQuestion = ""; // Uloží aktuálnu otázku pre editor
 
-        // --- GLOBALNA KONFIGURACIA Z HOSTOVANEHO PROSTREDIA (Canvas/GitHub) ---
-        // Pre lokálne spustenie bude potrebné tieto premenné definovať (viď pôvodný kód),
-        // ale pre Canvas sú garantované.
-
+        // --- LOKÁLNA FALLBACK KONFIGURÁCIA (ak nie je dostupná z Canvasu) ---
+        const LOCAL_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyAfs4NluHtDInHgmD22DHYDLt6ypl008DU",
+            authDomain: "citanie-sv.firebaseapp.com",
+            projectId: "citanie-sv",
+            storageBucket: "citanie-sv.appspot.com",
+            messagingSenderId: "16378682541",
+            appId: "1:16378682541:web:be64c5a5fff65055657a24",
+            measurementId: "G-VM2CKF7QYS"
+        };
+        
+        // Inicializácia premenných z globálneho prostredia (Canvas) s fallbackom
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-poll-app';
         const firebaseConfig = typeof __firebase_config !== 'undefined' 
             ? JSON.parse(__firebase_config) 
-            : null; // Ponecháme null, aby sa predišlo chybnému lokálnemu konfigu v hostovanom prostredí.
+            : LOCAL_FIREBASE_CONFIG;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
+            
         const INITIAL_QUESTION = "Kto pravidelne číta Sväté Písmo?";
 
         // Štruktúra mien a kľúčov pre databázu
@@ -198,37 +194,30 @@
          * Používa plnú cestu pre verejné dáta Canvas: /artifacts/{appId}/public/data/polls/svate_pismo
          */
         function getPollDocRef(db, appId) {
-            // Táto cesta ZODPOVEDÁ bezpečnostným pravidlám pre verejné/zdieľané dáta.
-            return doc(db, "artifacts", appId, "public", "data", "polls", "svate_pismo");
+            // Táto cesta zodpovedá bezpečnostným pravidlám pre verejné/zdieľané dáta.
+            // POUŽITIE V8 KOMPATIBILNEJ CESTY db.collection().doc().collection()...
+            return db.collection("artifacts").doc(appId).collection("public").doc("data").collection("polls").doc("svate_pismo");
         }
 
 
         // --- FUNKCIA PRE NATÍVNE TTS (SpeechSynthesis) ---
         
         let skVoice = null;
-        let voicesLoaded = false;
-        
         /** Načíta hlasy pre TTS (slovenský alebo český fallback) */
         const loadVoices = () => {
-            if (voicesLoaded) return;
             const voices = window.speechSynthesis.getVoices();
             skVoice = voices.find(voice => voice.lang === 'sk-SK');
             if (!skVoice) {
                 // Fallback na český hlas (cs-CZ), ak slovenský nie je dostupný
                 skVoice = voices.find(voice => voice.lang.startsWith('cs-'));
             }
-            if (skVoice) {
-                voicesLoaded = true;
-                console.log("TTS Hlas načítaný:", skVoice.name);
-            }
         };
 
-        // Načítanie hlasov: ak už sú načítané, zavoláme hneď, inak čakáme na udalosť
         if ('speechSynthesis' in window) {
-            loadVoices();
             if (window.speechSynthesis.onvoiceschanged !== undefined) {
                 window.speechSynthesis.onvoiceschanged = loadVoices;
             }
+            loadVoices();
         }
 
         /**
@@ -236,28 +225,21 @@
          * @param {string} text Text na prečítanie.
          */
         window.playNativeAudio = function(text) {
-            if (!('speechSynthesis' in window)) {
-                console.warn("Prehliadač nepodporuje natívnu syntézu reči.");
-                return;
-            }
-            
-            // Uistíme sa, že je TTS pripravené a zrušíme predchádzajúce hovorenie
-            window.speechSynthesis.cancel();
-            loadVoices(); // Skúsime znova načítať hlasy, ak sa neúspešne.
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            
-            if (skVoice) {
-                utterance.voice = skVoice;
-                utterance.lang = skVoice.lang; 
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); 
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                if (skVoice) {
+                    utterance.voice = skVoice;
+                    utterance.lang = skVoice.lang; 
+                } else {
+                    utterance.lang = 'sk-SK'; 
+                }
+                utterance.rate = 0.9; 
+                window.speechSynthesis.speak(utterance);
             } else {
-                // Použijeme aspoň predvolený hlas, ak SK/CS nie je dostupné
-                utterance.lang = 'sk-SK'; 
-                console.warn("Nepodarilo sa nájsť slovenský alebo český hlas. Použije sa predvolený hlas.");
+                console.warn("Prehliadač nepodporuje natívnu syntézu reči (SpeechSynthesis).");
             }
-
-            utterance.rate = 0.9; 
-            window.speechSynthesis.speak(utterance);
         }
         
         /**
@@ -266,29 +248,21 @@
         async function initFirebase() {
             loadingDiv.classList.remove('hidden');
 
-            // Kontrola, či bola konfigurácia poskytnutá hostiteľským prostredím
-            if (!firebaseConfig) {
-                errorDiv.textContent = "Chyba: Firebase konfigurácia nebola poskytnutá hostiteľským prostredím.";
-                errorDiv.classList.remove('hidden');
-                loadingDiv.classList.add('hidden');
-                return;
-            }
-
             try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
+                // Konverzia na V8 (Compat) inicializáciu:
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                auth = firebase.auth();
 
-                // Autentifikácia
+                // Autentifikácia (použitie V8 metód)
                 if (initialAuthToken) {
-                    // Ak je token dostupný z platformy (Canvas)
-                    await signInWithCustomToken(auth, initialAuthToken);
+                    // Ak je token dostupný z platformy
+                    await auth.signInWithCustomToken(initialAuthToken);
                 } else {
                     // Pre lokálne spustenie / anonymné prihlásenie
-                    await signInAnonymously(auth);
+                    await auth.signInAnonymously();
                 }
                 
-                // Získanie ID užívateľa po prihlásení
                 userId = auth.currentUser?.uid || crypto.randomUUID();
                 
                 // Použitie správne konštruovanej cesty k dokumentu
@@ -307,10 +281,11 @@
          * Skontroluje, či anketa existuje, a ak nie, vytvorí ju s počiatočnými nulovými hlasmi.
          */
         async function checkAndInitializePoll() {
-            const pollRef = getPollDocRef(db, appId); 
-            const pollSnap = await getDoc(pollRef);
+            const pollRef = getPollDocRef(db, appId); // POUŽITIE SPRÁVNEJ CESTY
+            // V9: const pollSnap = await getDoc(pollRef); -> V8:
+            const pollSnap = await pollRef.get(); 
 
-            if (!pollSnap.exists()) {
+            if (!pollSnap.exists) {
                 console.log("Anketa neexistuje, inicializujem ju.");
                 
                 const initialPeopleData = {};
@@ -318,7 +293,8 @@
                     initialPeopleData[key] = { yes: 0, no: 0 };
                 });
 
-                await setDoc(pollRef, {
+                // V9: await setDoc(pollRef, { ... }); -> V8:
+                await pollRef.set({
                     question: INITIAL_QUESTION,
                     people: initialPeopleData,
                     userVotes: {},
@@ -330,13 +306,14 @@
          * Nastaví real-time listener na dokument ankety.
          */
         function setupRealtimeListener() {
-            const pollRef = getPollDocRef(db, appId); 
+            const pollRef = getPollDocRef(db, appId); // POUŽITIE SPRÁVNEJ CESTY
 
-            onSnapshot(pollRef, (docSnap) => {
+            // V9: onSnapshot(pollRef, ... -> V8:
+            pollRef.onSnapshot((docSnap) => {
                 loadingDiv.classList.add('hidden');
                 errorDiv.classList.add('hidden');
 
-                if (docSnap.exists()) {
+                if (docSnap.exists) {
                     render(docSnap.data());
                 } else {
                     // Ak dokument neexistuje (bol vymazaný), skúsime ho znova inicializovať.
@@ -360,8 +337,7 @@
             newQuestionInput.value = currentQuestion; 
 
             const people = data.people || {};
-            // Získame dáta o hlasovaní aktuálneho užívateľa
-            const userVotes = data.userVotes?.[userId] || {}; 
+            const userVotes = data.userVotes?.[userId] || {};
             
             peopleList.innerHTML = ''; 
             totalSummary.innerHTML = ''; 
@@ -450,58 +426,72 @@
             }
 
             const personName = PEOPLE[personKey];
-            const ref = getPollDocRef(db, appId); 
+            const ref = getPollDocRef(db, appId); // POUŽITIE SPRÁVNEJ CESTY
             
             let ttsMessage = "";
+            let ttsPlayed = false;
 
             messageDisplay.textContent = `Odosielam tvoj hlas pre ${personName}...`;
 
             try {
-                await runTransaction(db, async (tx) => {
+                // V9: await runTransaction(db, async (tx) => { ... -> V8:
+                await db.runTransaction(async (tx) => {
                     const ds = await tx.get(ref);
-                    if (!ds.exists()) throw new Error("Dokument ankety neexistuje.");
+                    if (!ds.exists) throw new Error("Dokument ankety neexistuje.");
                     
                     const data = ds.data();
                     const prev = data.userVotes?.[userId]?.[personKey];
 
                     if (prev === newVote) {
-                         // Ak je hlas rovnaký, NEAKTUALIZUJEME DB, ale prehráme zvuk.
-                        ttsMessage = newVote === 'yes' 
-                            ? `${personName}, ďakujem ti za tvoj hlas ÁNO. Stretneme sa pri čítaní svätého písma. Boh ti žehnaj.`
-                            : `${personName} veľmi ma mrzí, že ti situácia nedovoľuje zúčastniť sa čítania svätého písma. Boh ti žehnaj.`;
-                        // Hlas sa nezmenil, ale transakcia sa úspešne dokončila (bez aktualizácie)
-                        return;
+                        // Ak je hlas rovnaký, len prehráme TTS a ukončíme transakciu.
+                        throw new Error("Hlas sa nezmenil, nie je potrebné aktualizovať databázu.");
                     }
 
                     const upd = {};
                     
                     // Dekrement predchádzajúceho hlasu (ak existoval)
-                    if (prev === "yes") upd[`people.${personKey}.yes`] = increment(-1);
-                    if (prev === "no") upd[`people.${personKey}.no`] = increment(-1);
+                    // V9: increment(-1) -> V8: firebase.firestore.FieldValue.increment(-1)
+                    if (prev === "yes") upd[`people.${personKey}.yes`] = firebase.firestore.FieldValue.increment(-1);
+                    if (prev === "no") upd[`people.${personKey}.no`] = firebase.firestore.FieldValue.increment(-1);
                     
                     // Inkremet nového hlasu
-                    upd[`people.${personKey}.${newVote}`] = increment(1);
+                    // V9: increment(1) -> V8: firebase.firestore.FieldValue.increment(1)
+                    upd[`people.${personKey}.${newVote}`] = firebase.firestore.FieldValue.increment(1);
                     upd[`userVotes.${userId}.${personKey}`] = newVote;
                     
                     tx.update(ref, upd);
                     
-                    // Nastavenie TTS správy po úspešnej transakcii
-                    ttsMessage = newVote === 'yes' 
-                        ? `${personName}, ďakujem ti za tvoj hlas ÁNO. Stretneme sa pri čítaní svätého písma. Boh ti žehnaj.`
-                        : `${personName} veľmi ma mrzí, že ti situácia nedovoľuje zúčastniť sa čítania svätého písma. Boh ti žehnaj.`;
+                    // Generovanie TTS správy po úspešnej transakcii
+                    if (newVote === 'yes') {
+                        ttsMessage = `${personName}, ďakujem ti za tvoj hlas ÁNO. Stretneme sa pri čítaní svätého písma. Boh ti žehnaj.`;
+                    } else {
+                        ttsMessage = `${personName} veľmi ma mrzí, že ti situácia nedovoľuje zúčastniť sa čítania svätého písma. Boh ti žehnaj.`;
+                    }
+                    ttsPlayed = true;
 
                 });
                 
                 // Spustenie TTS po transakcii
-                if (ttsMessage) {
+                if (ttsPlayed && ttsMessage) {
                     playNativeAudio(ttsMessage);
                 }
 
                 messageDisplay.textContent = `Hlas pre ${personName} bol úspešne zaznamenaný!`;
 
             } catch (e) {
-                console.error("Chyba pri hlasovaní:", e);
-                messageDisplay.textContent = e?.message || "Chyba pri hlasovaní.";
+                if (e?.message && e.message.includes("Hlas sa nezmenil")) {
+                    // Prehráme TTS, ak sa hlas nezmenil, ale transakcia bola zrušená
+                    if (newVote === 'yes') {
+                        ttsMessage = `${personName}, ďakujem ti za tvoj hlas ÁNO. Stretneme sa pri čítaní svätého písma. Boh ti žehnaj.`;
+                    } else {
+                        ttsMessage = `${personName} veľmi ma mrzí, že ti situácia nedovoľuje zúčastniť sa čítania svätého písma. Boh ti žehnaj.`;
+                    }
+                    playNativeAudio(ttsMessage);
+                    messageDisplay.textContent = "Už si hlasoval/a rovnako. Zvuk sa však prehrá.";
+                } else {
+                    console.error("Chyba pri hlasovaní:", e);
+                    messageDisplay.textContent = e?.message || "Chyba pri hlasovaní.";
+                }
             } finally {
                 setTimeout(()=>messageDisplay.textContent="",2500);
             }
@@ -532,15 +522,14 @@
             hideDeleteConfirmation(); 
             messageDisplay.textContent = "Vymazávam anketu a reštartujem...";
 
-            const pollRef = getPollDocRef(db, appId); 
+            const pollRef = getPollDocRef(db, appId); // POUŽITIE SPRÁVNEJ CESTY
 
             try {
                 // 1. Vykonáme vymazanie dokumentu
-                await deleteDoc(pollRef);
+                // V9: await deleteDoc(pollRef); -> V8:
+                await pollRef.delete();
                 
                 // 2. Manuálna re-inicializácia po vymazaní
-                // onSnapshot by mal zachytiť, že dokument zmizol a sám zavolať checkAndInitializePoll,
-                // ale pre istotu ho zavoláme priamo pre rýchlejší UX.
                 await checkAndInitializePoll(); 
                 
                 messageDisplay.textContent = "Anketa bola úspešne vymazaná a reštartovaná!";
@@ -589,10 +578,11 @@
 
             editorMessage.textContent = "Ukladám novú otázku...";
             
-            const pollRef = getPollDocRef(db, appId); 
+            const pollRef = getPollDocRef(db, appId); // POUŽITIE SPRÁVNEJ CESTY
 
             try {
-                await updateDoc(pollRef, {
+                // V9: await updateDoc(pollRef, { question: newQuestion }); -> V8:
+                await pollRef.update({
                     question: newQuestion
                 });
 
