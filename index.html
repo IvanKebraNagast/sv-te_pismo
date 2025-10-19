@@ -28,14 +28,11 @@
         #delete-confirmation-modal {
              transition: opacity 0.3s ease-out;
         }
-        .btn {
-            font-bold py-3 px-4 rounded-xl shadow transform transition duration-150 active:scale-95 flex items-center justify-center text-lg
-        }
     </style>
 </head>
 <body>
 
-    <div id="app" class="w-full max-w-4xl p-6 md:p-10 bg-white shadow-2xl rounded-xl transition-all duration-300 mx-auto">
+    <div id="app" class="w-full max-w-4xl p-6 md:p-10 bg-white shadow-2xl rounded-xl mx-auto">
         <h1 class="text-4xl font-extrabold text-gray-800 mb-2 text-center flex items-center justify-center">
             <span class="mr-3 text-5xl">📖</span> Anketa čítanie svätého písma
         </h1>
@@ -45,7 +42,7 @@
         </div>
 
         <div class="space-y-6">
-            <p id="question-display" class="text-2xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">Načíta sa otázka...</p>
+            <p id="question-display" class="text-2xl md:text-3xl font-extrabold text-blue-700 text-center mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">Načíta sa otázka...</p>
             <div id="people-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 border-t pt-6"></div>
         </div>
         
@@ -56,7 +53,7 @@
 
         <div class="mt-8 pt-4 border-t text-center">
             <button id="toggle-editor-button" onclick="toggleQuestionEditor()"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-150 active:scale-95 transform hover:shadow-xl">
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg">
                 Zmeniť otázku
             </button>
         </div>
@@ -69,11 +66,11 @@
             
             <div class="flex justify-end space-x-2">
                 <button onclick="saveQuestion()"
-                    class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 active:scale-95 shadow">
+                    class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg">
                     Uložiť zmenu
                 </button>
                 <button onclick="toggleQuestionEditor(true)"
-                    class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 active:scale-95 shadow">
+                    class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg">
                     Zrušiť
                 </button>
             </div>
@@ -83,7 +80,7 @@
         <div class="mt-12 pt-6 border-t border-red-300 text-center">
             <h3 class="text-xl font-bold text-red-600 mb-3">Nebezpečná Zóna (Reštart)</h3>
             <button id="confirm-delete-button" onclick="confirmDeletePoll()"
-                class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-150 active:scale-95 transform hover:shadow-xl">
+                class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg">
                 VYMAZAŤ ANKETU (Reštart)
             </button>
         </div>
@@ -96,14 +93,14 @@
     </div>
     
     <div id="delete-confirmation-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-100">
+        <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full">
             <h3 class="text-2xl font-bold text-red-600 mb-3">Naozaj vymazať?</h3>
-            <p class="text-gray-700 mb-6">Týmto sa natrvalo vymažú všetky hlasy a otázka v databáze, a anketa sa nanovo inicializuje s pôvodnou otázkou.</p>
+            <p class="text-gray-700 mb-6">Týmto sa natrvalo vymažú všetky hlasy a otázka v databáze.</p>
             <div class="flex justify-between space-x-4">
-                <button onclick="deletePoll()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition active:scale-95 shadow">
-                    Áno, vymazať natrvalo
+                <button onclick="deletePoll()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg">
+                    Áno, vymazať
                 </button>
-                <button onclick="hideDeleteConfirmation()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 rounded-lg transition active:scale-95 shadow">
+                <button onclick="hideDeleteConfirmation()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 rounded-lg">
                     Zrušiť
                 </button>
             </div>
@@ -112,15 +109,11 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc, updateDoc, increment, getDoc, runTransaction, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc, getDoc, updateDoc, increment, runTransaction, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        let db;
-        let auth;
-        let userId = 'anon'; 
-        let currentQuestion = ""; 
-
-        const LOCAL_FIREBASE_CONFIG = {
+        let db, auth, userId = 'anon';
+        const firebaseConfig = {
             apiKey: "AIzaSyAfs4NluHtDInHgmD22DHYDLt6ypl008DU",
             authDomain: "citanie-sv.firebaseapp.com",
             projectId: "citanie-sv",
@@ -129,15 +122,8 @@
             appId: "1:16378682541:web:be64c5a5fff65055657a24",
             measurementId: "G-VM2CKF7QYS"
         };
-        
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-poll-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : LOCAL_FIREBASE_CONFIG;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-            
-        const INITIAL_QUESTION = "Kto pravidelne číta Sväté Písmo?";
 
+        const INITIAL_QUESTION = "Kto pravidelne číta Sväté Písmo?";
         const PEOPLE = {
             'adka': 'Aďka',
             'danka': 'Danka',
@@ -148,27 +134,125 @@
             'milan': 'Milan'
         };
 
-        const questionDisplay = document.getElementById('question-display');
-        const peopleList = document.getElementById('people-list');
-        const loadingDiv = document.getElementById('loading');
-        const errorDiv = document.getElementById('error-message');
-        const messageDisplay = document.getElementById('message-display');
-        const questionEditor = document.getElementById('question-editor');
-        const toggleEditorButton = document.getElementById('toggle-editor-button');
-        const newQuestionInput = document.getElementById('new-question-input');
-        const editorMessage = document.getElementById('editor-message');
-        const totalSummary = document.getElementById('total-summary');
-        const deleteConfirmationModal = document.getElementById('delete-confirmation-modal');
+        const q = id => document.getElementById(id);
 
-        // 🔧 OPRAVA TU – jednoduchá, lokálna cesta
-        function getPollDocRef(db, appId) {
+        function getPollDocRef() {
             return doc(db, "polls", "svate_pismo");
         }
 
-        // zvyšok kódu ostáva bez zmeny — všetky tvoje funkcie initFirebase, render, handleVote, deletePoll, TTS atď.
-        // ...
-        // (nič som nevymazal ani neupravil mimo tohto jedného riadku)
-    </script>
+        let skVoice = null;
+        const loadVoices = () => {
+            const voices = window.speechSynthesis.getVoices();
+            skVoice = voices.find(v => v.lang === "sk-SK") || voices.find(v => v.lang.startsWith("cs-"));
+        };
+        if (window.speechSynthesis.onvoiceschanged !== undefined) window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
 
+        function playNativeAudio(text) {
+            if ('speechSynthesis' in window) {
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = skVoice ? skVoice.lang : "sk-SK";
+                u.rate = 0.9;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(u);
+            }
+        }
+
+        async function initFirebase() {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            await signInAnonymously(auth);
+            userId = auth.currentUser?.uid || crypto.randomUUID();
+            await checkAndInitializePoll();
+            setupRealtimeListener();
+        }
+
+        async function checkAndInitializePoll() {
+            const ref = getPollDocRef();
+            const snap = await getDoc(ref);
+            if (!snap.exists()) {
+                const people = {};
+                Object.keys(PEOPLE).forEach(k => people[k] = { yes: 0, no: 0 });
+                await setDoc(ref, { question: INITIAL_QUESTION, people, userVotes: {} });
+            }
+        }
+
+        function setupRealtimeListener() {
+            const ref = getPollDocRef();
+            onSnapshot(ref, docSnap => {
+                if (docSnap.exists()) renderPoll(docSnap.data());
+            });
+        }
+
+        function renderPoll(data) {
+            q("question-display").textContent = data.question || INITIAL_QUESTION;
+            const userVotes = data.userVotes?.[userId] || {};
+            const peopleData = data.people || {};
+            q("people-list").innerHTML = "";
+            Object.keys(PEOPLE).forEach(key => {
+                const name = PEOPLE[key];
+                const v = peopleData[key] || { yes: 0, no: 0 };
+                const total = v.yes + v.no;
+                const yesPct = total ? Math.round(v.yes / total * 100) : 0;
+                const noPct = total ? 100 - yesPct : 0;
+                const myVote = userVotes[key] || "none";
+                const card = `
+                    <div class="p-4 bg-white rounded-xl shadow-lg">
+                        <h2 class="text-xl font-bold text-center mb-3">${name}</h2>
+                        ${myVote === "yes" ? `<div class='text-center text-green-700 mb-2'>😇👍 <p>Tvoj hlas: ÁNO</p></div>` : myVote === "no" ? `<div class='text-center text-red-700 mb-2'>😔👎 <p>Tvoj hlas: NIE</p></div>` : `<div class='text-center text-gray-500 mb-2'><p>Zatiaľ si nehlasoval/a.</p></div>`}
+                        <div class="flex gap-2 mb-3">
+                            <button class="flex-1 bg-green-600 text-white py-2 rounded-lg" onclick="handleVote('${key}','yes')">✅ Áno</button>
+                            <button class="flex-1 bg-red-600 text-white py-2 rounded-lg" onclick="handleVote('${key}','no')">❌ Nie</button>
+                        </div>
+                        <div class="text-sm">Áno: ${v.yes} • Nie: ${v.no}</div>
+                    </div>`;
+                q("people-list").insertAdjacentHTML("beforeend", card);
+            });
+        }
+
+        window.handleVote = async (personKey, newVote) => {
+            const ref = getPollDocRef();
+            const name = PEOPLE[personKey];
+            try {
+                await runTransaction(db, async (tx) => {
+                    const ds = await tx.get(ref);
+                    const d = ds.data();
+                    const prev = d.userVotes?.[userId]?.[personKey];
+                    if (prev === newVote) throw new Error("rovnaky");
+                    const upd = {};
+                    if (prev === "yes") upd[`people.${personKey}.yes`] = increment(-1);
+                    if (prev === "no") upd[`people.${personKey}.no`] = increment(-1);
+                    upd[`people.${personKey}.${newVote}`] = increment(1);
+                    upd[`userVotes.${userId}.${personKey}`] = newVote;
+                    tx.update(ref, upd);
+                });
+                const msg = newVote === "yes" 
+                    ? "ďakujem ti za tvoj hlas ÁNO. Stretneme sa pri čítaní svätého písma. Boh ti žehnaj." 
+                    : "veľmi ma mrzí, že ti situácia nedovoľuje zúčastniť sa čítania svätého písma. Boh ti žehnaj.";
+                playNativeAudio(msg);
+            } catch (e) {
+                if (e.message === "rovnaky") {
+                    const msg = newVote === "yes" 
+                        ? "ďakujem ti za tvoj hlas ÁNO. Stretneme sa pri čítaní svätého písma. Boh ti žehnaj." 
+                        : "veľmi ma mrzí, že ti situácia nedovoľuje zúčastniť sa čítania svätého písma. Boh ti žehnaj.";
+                    playNativeAudio(msg);
+                }
+            }
+        };
+
+        window.confirmDeletePoll = () => q("delete-confirmation-modal").classList.remove("hidden");
+        window.hideDeleteConfirmation = () => q("delete-confirmation-modal").classList.add("hidden");
+
+        window.deletePoll = async () => {
+            const ref = getPollDocRef();
+            await deleteDoc(ref);
+            await checkAndInitializePoll();
+            q("delete-confirmation-modal").classList.add("hidden");
+            alert("Anketa bola úspešne vymazaná.");
+        };
+
+        window.onload = initFirebase;
+    </script>
 </body>
 </html>
