@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anketa čítanie svätého písma</title>
-    <!-- Načítanie Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Nastavenie fontu a základné štýly -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
         body {
@@ -18,707 +16,271 @@
             min-height: 100vh;
             padding: 20px;
         }
-        /* Štýl pre animáciu loading spinnera */
-        .spinner {
-            border-top-color: #3b82f6;
-            animation: spinner 1.5s linear infinite;
-        }
-        @keyframes spinner {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        #delete-confirmation-modal {
-            transition: opacity 0.3s ease-out;
-        }
-        /* Oprava chýbajúceho štýlu pre button */
-        .btn {
-            font-weight: bold; padding-top: 0.75rem; padding-bottom: 0.75rem; padding-left: 1rem; padding-right: 1rem; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); transition-duration: 150ms; transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transform: scale(1); display: flex; align-items: center; justify-content: center; font-size: 1.125rem; /* text-lg */
-        }
-        .btn:active {
-            transform: scale(0.95);
-        }
-        
-        /* --- KOREKCIA CSS pre sekciu súhrnu --- */
-        /* Nastaví grid a medzery */
-        #total-summary {
-            display: grid;
-            /* Zníženie minimálnej šírky pre lepšiu kompresiu na mobile/tablete */
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); 
-            gap: 0.5rem; /* Zníženie medzery pre lepšie využitie priestoru */
-        }
-        
-        /* Štýl pre každú sumárnu kartu */
-        .summary-card {
-            padding: 0.75rem; /* menší padding */
-            height: 100%; /* Zabezpečenie rovnakej výšky */
-            display: flex; /* Flexbox pre vertikálne zarovnanie obsahu */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center; /* Vertikálne centrovanie */
-            text-align: center;
-            border-radius: 0.75rem; /* Zaoblenie */
-        }
-        
-        /* Zmenšenie fontu pre celkový výsledok a zabezpečenie zalomenia */
-        .summary-result {
-            font-size: 1.25rem; /* Zmenšenie z 2xl (1.5rem) na 1.25rem */
-            font-weight: 800;
-            margin-top: 0.25rem;
-            word-break: break-word; /* Umožní zalomenie dlhého textu v malom priestore */
-            line-height: 1.2;
-        }
-
-        /* Zabezpečenie, že mená sú čitateľné */
-        .summary-name {
-            font-size: 1rem; /* text-base */
-            font-weight: 600;
-        }
-        /* ---------------------------------- */
+        .spinner { border-top-color:#3b82f6;animation:spinner 1.5s linear infinite;}
+        @keyframes spinner {0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+        .btn{font-weight:bold;padding:0.75rem 1rem;border-radius:0.75rem;box-shadow:0 4px 6px -1px rgb(0 0 0 / .1),0 2px 4px -2px rgb(0 0 0 / .1);transition:.15s all cubic-bezier(.4,0,.2,1);transform:scale(1);display:flex;align-items:center;justify-content:center;font-size:1.125rem}
+        .btn:active{transform:scale(.95)}
+        #total-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:.5rem}
+        .summary-card{padding:.75rem;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:.75rem}
+        .summary-result{font-size:1.25rem;font-weight:800;margin-top:.25rem;word-break:break-word;line-height:1.2}
+        .summary-name{font-size:1rem;font-weight:600}
     </style>
 </head>
 <body>
-
-    <div id="app" class="w-full max-w-4xl p-6 md:p-10 bg-white shadow-2xl rounded-xl transition-all duration-300 mx-auto">
-        <!-- Hlavný nadpis -->
-        <h1 class="text-4xl font-extrabold text-gray-800 mb-2 text-center flex items-center justify-center">
-            <span class="mr-3 text-5xl">📖</span> Anketa čítanie svätého písma
-        </h1>
-
-        <div id="main-message-container" class="text-center mt-2 flex justify-center h-6">
-            <p id="message-display" class="text-center text-base font-semibold text-gray-500"></p>
-        </div>
-
-        <!-- Sekcia pre otázku -->
-        <div class="space-y-6">
-            <p id="question-display" class="text-2xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">Načíta sa otázka...</p>
-            
-            <!-- Sekcia pre výsledky a hlasovanie (dynamický obsah) -->
-            <div id="people-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 border-t pt-6">
-                <!-- Zoznam osôb a výsledkov sa vloží sem pomocou JavaScriptu -->
-            </div>
-        </div>
-        
-        <!-- Sekcia pre súhrn výsledkov -->
-        <div id="total-summary-section" class="mt-8 pt-6 border-t border-gray-300">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Súhrn hlasovania (väčšina hlasov)</h2>
-            <div id="total-summary" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                <!-- Súhrn sa vloží sem pomocou JS -->
-            </div>
-        </div>
-
-        <!-- Tlačidlo pre zmenu otázky -->
-        <div class="mt-8 pt-4 border-t text-center">
-            <button id="toggle-editor-button" onclick="toggleQuestionEditor()"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-150 active:scale-95 transform hover:shadow-xl">
-                Zmeniť otázku
-            </button>
-        </div>
-
-        <!-- Sekcia pre editor otázky (spočiaku skrytá) -->
-        <div id="question-editor" class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200 hidden">
-            <h3 class="font-bold text-gray-700 mb-3 text-lg">Editor Otázky</h3>
-            <textarea id="new-question-input" rows="2" 
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-3 text-gray-700 shadow-inner"
-                placeholder="Sem zadajte novú otázku..."></textarea>
-            
-            <div class="flex justify-end space-x-2">
-                <button onclick="saveQuestion()"
-                    class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 active:scale-95 shadow">
-                    Uložiť zmenu
-                </button>
-                <button onclick="toggleQuestionEditor(true)"
-                    class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 active:scale-95 shadow">
-                    Zrušiť
-                </button>
-            </div>
-            <p id="editor-message" class="text-sm pt-2 h-5 text-center text-gray-600"></p>
-        </div>
-        
-        <!-- Sekcia pre ADMIN PRÍSTUP k Nebezpečnej Zóne (Nový prvok) -->
-        <div id="admin-access-section" class="mt-12 pt-6 border-t border-gray-300 text-center">
-            <h3 class="text-xl font-bold text-gray-700 mb-3">Administrátorský prístup</h3>
-            <div id="admin-prompt" class="max-w-xs mx-auto flex gap-2">
-                <input type="password" id="admin-code-input" placeholder="Zadajte kód pre Nebezpečnú Zónu"
-                    class="w-full p-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 text-gray-700 shadow-inner">
-                <button onclick="checkAdminCode()"
-                    class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition duration-150 active:scale-95 transform">
-                    OK
-                </button>
-            </div>
-            <p id="admin-message" class="text-sm pt-2 h-5 text-center text-red-600"></p>
-        </div>
-
-        <!-- Sekcia pre VYMAZANIE ANKETY (Teraz skrytá a odomknutá kódom) -->
-        <div id="delete-poll-section" class="pt-6 border-t border-red-300 text-center hidden">
-            <h3 class="text-xl font-bold text-red-600 mb-3">Nebezpečná Zóna (Reštart)</h3>
-            <button id="confirm-delete-button" onclick="confirmDeletePoll()"
-                class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-150 active:scale-95 transform hover:shadow-xl">
-                VYMAZAŤ ANKETU (Reštart)
-            </button>
-        </div>
-
-
-        <!-- Indikátor načítania/chyby -->
-        <div id="loading" class="text-center text-blue-600 font-medium pt-8">
-            <div class="inline-block w-6 h-6 border-4 border-gray-200 border-t-4 border-t-blue-600 rounded-full spinner mr-2"></div>
-            Načítavam anketu a pripájam sa k databáze...
-        </div>
-        <div id="error-message" class="text-center text-red-600 font-medium hidden pt-8">Chyba pri pripojení. Skúste obnoviť stránku.</div>
+<div id="app" class="w-full max-w-4xl p-6 md:p-10 bg-white shadow-2xl rounded-xl mx-auto">
+    <h1 class="text-4xl font-extrabold text-gray-800 mb-2 text-center flex items-center justify-center">
+        <span class="mr-3 text-5xl">📖</span> Anketa čítanie svätého písma
+    </h1>
+    <div id="main-message-container" class="text-center mt-2 flex justify-center h-6">
+        <p id="message-display" class="text-center text-base font-semibold text-gray-500"></p>
     </div>
-    
-    <!-- POTVRDZOVACÍ MODAL (CUSTOM UI) -->
-    <div id="delete-confirmation-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-100">
-            <h3 class="text-2xl font-bold text-red-600 mb-3">Naozaj vymazať?</h3>
-            <p class="text-gray-700 mb-6">Týmto sa natrvalo vymažú všetky hlasy a otázka v databáze, a anketa sa nanovo inicializuje s pôvodnou otázkou.</p>
-            <div class="flex justify-between space-x-4">
-                <button onclick="deletePoll()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition active:scale-95 shadow">
-                    Áno, vymazať natrvalo
-                </button>
-                <button onclick="hideDeleteConfirmation()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 rounded-lg transition active:scale-95 shadow">
-                    Zrušiť
-                </button>
-            </div>
-        </div>
+    <div class="space-y-6">
+        <p id="question-display" class="text-2xl md:text-3xl font-extrabold text-blue-700 text-center leading-snug mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">
+            Načíta sa otázka...
+        </p>
+        <div id="people-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 border-t pt-6"></div>
+    </div>
+    <div id="total-summary-section" class="mt-8 pt-6 border-t border-gray-300">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Súhrn hlasovania (väčšina hlasov)</h2>
+        <div id="total-summary" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4"></div>
     </div>
 
+    <div class="mt-8 pt-4 border-t text-center">
+        <button id="toggle-editor-button" onclick="toggleQuestionEditor()"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition active:scale-95 transform hover:shadow-xl">
+            Zmeniť otázku
+        </button>
+    </div>
 
-    <!-- Firebase SCRIPT (Upravené pre kompatibilitu s GitHub Pages) -->
-    <!-- Firebase kompatibilné knižnice (fungujú aj na GitHub Pages) -->
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
-    <script>
-        
-        // --- ADMIN KÓD ---
-        const ADMIN_CODE = "reset2024"; // TU JE VÁŠ KÓD. Zmeňte ho!
-        // ------------------
-        
-        // Funkcie Firebase sú teraz dostupné globálne cez objekt 'firebase'
-        let db;
-        let auth;
-        let userId = 'anon'; 
-        let currentQuestion = ""; // Uloží aktuálnu otázku pre editor
+    <div id="question-editor" class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200 hidden">
+        <h3 class="font-bold text-gray-700 mb-3 text-lg">Editor Otázky</h3>
+        <textarea id="new-question-input" rows="2"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-3 text-gray-700 shadow-inner"
+            placeholder="Sem zadajte novú otázku..."></textarea>
+        <div class="flex justify-end space-x-2">
+            <button onclick="saveQuestion()" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition active:scale-95 shadow">Uložiť zmenu</button>
+            <button onclick="toggleQuestionEditor(true)" class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition active:scale-95 shadow">Zrušiť</button>
+        </div>
+        <p id="editor-message" class="text-sm pt-2 h-5 text-center text-gray-600"></p>
+    </div>
 
-        // --- LOKÁLNA FALLBACK KONFIGURÁCIA (ak nie je dostupná z Canvasu) ---
-        const LOCAL_FIREBASE_CONFIG = {
-            apiKey: "AIzaSyAfs4NluHtDInHgmD22DHYDLt6ypl008DU",
-            authDomain: "citanie-sv.firebaseapp.com",
-            projectId: "citanie-sv",
-            storageBucket: "citanie-sv.appspot.com",
-            messagingSenderId: "16378682541",
-            appId: "1:16378682541:web:be64c5a5fff65055657a24",
-            measurementId: "G-VM2CKF7QYS"
-        };
-        
-        // Inicializácia premenných z globálneho prostredia (Canvas) s fallbackom
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-poll-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : LOCAL_FIREBASE_CONFIG;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-            
-        const INITIAL_QUESTION = "Kto pravidelne číta Sväté Písmo?";
+    <div id="admin-access-section" class="mt-12 pt-6 border-t border-gray-300 text-center">
+        <h3 class="text-xl font-bold text-gray-700 mb-3">Administrátorský prístup</h3>
+        <div id="admin-prompt" class="max-w-xs mx-auto flex gap-2">
+            <input type="password" id="admin-code-input" placeholder="Zadajte kód pre Nebezpečnú Zónu"
+                class="w-full p-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 text-gray-700 shadow-inner">
+            <button onclick="checkAdminCode()" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition active:scale-95 transform">OK</button>
+        </div>
+        <p id="admin-message" class="text-sm pt-2 h-5 text-center text-red-600"></p>
+    </div>
 
-        // Štruktúra mien, kľúčov a POHLAVIA pre databázu
-        // F = Ženské, M = Mužské
-        const PEOPLE = {
-            'adka': { name: 'Aďka', gender: 'F' },
-            'danka': { name: 'Danka', gender: 'F' },
-            'emilia': { name: 'Emília', gender: 'F' },
-            'ivan': { name: 'Ivan', gender: 'M' },
-            'janka': { name: 'Janka', gender: 'F' },
-            'marketka': { name: 'Markétka', gender: 'F' },
-            'milan': { name: 'Milan', gender: 'M' }
-        };
+    <div id="delete-poll-section" class="pt-6 border-t border-red-300 text-center hidden">
+        <h3 class="text-xl font-bold text-red-600 mb-3">Nebezpečná Zóna (Reštart)</h3>
+        <button id="confirm-delete-button" onclick="confirmDeletePoll()" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition active:scale-95 transform hover:shadow-xl">
+            VYMAZAŤ ANKETU (Reštart)
+        </button>
+    </div>
 
-        // Elementy UI
-        const questionDisplay = document.getElementById('question-display');
-        const peopleList = document.getElementById('people-list');
-        const loadingDiv = document.getElementById('loading');
-        const errorDiv = document.getElementById('error-message');
-        const messageDisplay = document.getElementById('main-message-container').querySelector('p');
-        const questionEditor = document.getElementById('question-editor');
-        const toggleEditorButton = document.getElementById('toggle-editor-button');
-        const newQuestionInput = document.getElementById('new-question-input');
-        const editorMessage = document.getElementById('editor-message');
-        const totalSummary = document.getElementById('total-summary');
-        const deleteConfirmationModal = document.getElementById('delete-confirmation-modal');
-        
-        // Nové admin prvky
-        const adminCodeInput = document.getElementById('admin-code-input');
-        const adminMessage = document.getElementById('admin-message');
-        const deletePollSection = document.getElementById('delete-poll-section'); // Pôvodná "Nebezpečná zóna"
-        const adminPrompt = document.getElementById('admin-prompt');
+    <div id="loading" class="text-center text-blue-600 font-medium pt-8">
+        <div class="inline-block w-6 h-6 border-4 border-gray-200 border-t-4 border-t-blue-600 rounded-full spinner mr-2"></div>
+        Načítavam anketu a pripájam sa k databáze...
+    </div>
+    <div id="error-message" class="text-center text-red-600 font-medium hidden pt-8">Chyba pri pripojení. Skúste obnoviť stránku.</div>
+</div>
 
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+<script>
+const ADMIN_CODE="reset2024";
+let db,auth,userId='anon',currentQuestion="";
+const LOCAL_FIREBASE_CONFIG={
+ apiKey:"AIzaSyAfs4NluHtDInHgmD22DHYDLt6ypl008DU",
+ authDomain:"citanie-sv.firebaseapp.com",
+ projectId:"citanie-sv",
+ storageBucket:"citanie-sv.appspot.com",
+ messagingSenderId:"16378682541",
+ appId:"1:16378682541:web:be64c5a5fff65055657a24",
+ measurementId:"G-VM2CKF7QYS"};
+const appId='default-poll-app';
+const firebaseConfig=LOCAL_FIREBASE_CONFIG;
+const INITIAL_QUESTION="Kto pravidelne číta Sväté Písmo?";
+const PEOPLE={'adka':{name:'Aďka',gender:'F'},'danka':{name:'Danka',gender:'F'},'emilia':{name:'Emília',gender:'F'},'ivan':{name:'Ivan',gender:'M'},'janka':{name:'Janka',gender:'F'},'marketka':{name:'Markétka',gender:'F'},'milan':{name:'Milan',gender:'M'}};
+const questionDisplay=document.getElementById('question-display'),
+peopleList=document.getElementById('people-list'),
+loadingDiv=document.getElementById('loading'),
+errorDiv=document.getElementById('error-message'),
+messageDisplay=document.getElementById('main-message-container').querySelector('p'),
+questionEditor=document.getElementById('question-editor'),
+toggleEditorButton=document.getElementById('toggle-editor-button'),
+newQuestionInput=document.getElementById('new-question-input'),
+editorMessage=document.getElementById('editor-message'),
+totalSummary=document.getElementById('total-summary'),
+deleteConfirmationModal=document.getElementById('delete-confirmation-modal'),
+adminCodeInput=document.getElementById('admin-code-input'),
+adminMessage=document.getElementById('admin-message'),
+deletePollSection=document.getElementById('delete-poll-section'),
+adminPrompt=document.getElementById('admin-prompt');
 
-        /**
-         * Vytvorí referenciu na dokument ankety.
-         * Používa plnú cestu pre verejné dáta Canvas: /artifacts/{appId}/public/data/polls/svate_pismo
-         */
-        function getPollDocRef(db, appId) {
-            // Táto cesta zodpovedá bezpečnostným pravidlám pre verejné/zdieľané dáta.
-            // POUŽITIE V8 KOMPATIBILNEJ CESTY db.collection().doc().collection()...
-            return db.collection("artifacts").doc(appId).collection("public").doc("data").collection("polls").doc("svate_pismo");
-        }
+function getPollDocRef(db,appId){return db.collection("artifacts").doc(appId).collection("public").doc("data").collection("polls").doc("svate_pismo");}
 
+let skVoice=null;
+const loadVoices=()=>{const v=window.speechSynthesis.getVoices();skVoice=v.find(v=>v.lang==='sk-SK')||v.find(v=>v.lang.startsWith('cs-'));};
+if('speechSynthesis'in window){window.speechSynthesis.onvoiceschanged=loadVoices;loadVoices();}
+window.playNativeAudio=function(text){if(!('speechSynthesis'in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);if(skVoice){u.voice=skVoice;u.lang=skVoice.lang;}else u.lang='sk-SK';u.rate=0.9;window.speechSynthesis.speak(u);};
 
-        // --- FUNKCIA PRE NATÍVNE TTS (SpeechSynthesis) ---
-        
-        let skVoice = null;
-        /** Načíta hlasy pre TTS (slovenský alebo český fallback) */
-        const loadVoices = () => {
-            const voices = window.speechSynthesis.getVoices();
-            skVoice = voices.find(voice => voice.lang === 'sk-SK');
-            if (!skVoice) {
-                // Fallback na český hlas (cs-CZ), ak slovenský nie je dostupný
-                skVoice = voices.find(voice => voice.lang.startsWith('cs-'));
-            }
-        };
+async function initFirebase(){
+ loadingDiv.classList.remove('hidden');
+ try{
+  firebase.initializeApp(firebaseConfig);
+  db=firebase.firestore();auth=firebase.auth();
+  await auth.signInAnonymously();userId=auth.currentUser?.uid||crypto.randomUUID();
+  await checkAndInitializePoll();setupRealtimeListener();
+ }catch(e){console.error(e);errorDiv.textContent="Chyba:"+e.message;errorDiv.classList.remove('hidden');loadingDiv.classList.add('hidden');}
+}
 
-        if ('speechSynthesis' in window) {
-            if (window.speechSynthesis.onvoiceschanged !== undefined) {
-                window.speechSynthesis.onvoiceschanged = loadVoices;
-            }
-            loadVoices();
-        }
+async function checkAndInitializePoll(){
+ const ref=getPollDocRef(db,appId);const snap=await ref.get();
+ if(!snap.exists){
+  const init={};Object.keys(PEOPLE).forEach(k=>init[k]={yes:0,no:0});
+  await ref.set({question:INITIAL_QUESTION,people:init,userVotes:{}});
+ }
+}
 
-        /**
-         * Vygeneruje reč z textu pomocou natívneho TTS API prehliadača.
-         * @param {string} text Text na prečítanie.
-         */
-        window.playNativeAudio = function(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); 
-                const utterance = new SpeechSynthesisUtterance(text);
-                
-                if (skVoice) {
-                    utterance.voice = skVoice;
-                    utterance.lang = skVoice.lang; 
-                } else {
-                    utterance.lang = 'sk-SK'; 
-                }
-                utterance.rate = 0.9; 
-                window.speechSynthesis.speak(utterance);
-            } else {
-                console.warn("Prehliadač nepodporuje natívnu syntézu reči (SpeechSynthesis).");
-            }
-        }
-        
-        /**
-         * Inicializuje Firebase, autentifikuje užívateľa a spustí načítanie databázy.
-         */
-        async function initFirebase() {
-            loadingDiv.classList.remove('hidden');
+function setupRealtimeListener(){
+ const ref=getPollDocRef(db,appId);
+ ref.onSnapshot(doc=>{
+  loadingDiv.classList.add('hidden');
+  if(doc.exists)render(doc.data());
+  else checkAndInitializePoll();
+ });
+}
 
-            try {
-                // Konverzia na V8 (Compat) inicializáciu:
-                firebase.initializeApp(firebaseConfig);
-                db = firebase.firestore();
-                auth = firebase.auth();
+function render(data){
+ currentQuestion=data.question||INITIAL_QUESTION;
+ questionDisplay.textContent=currentQuestion;
+ const people=data.people||{};
+ peopleList.innerHTML='';totalSummary.innerHTML='';
+ Object.keys(PEOPLE).forEach(k=>{
+  const p=PEOPLE[k];const v=people[k]||{yes:0,no:0};
+  const yes=v.yes||0,no=v.no||0,total=yes+no;
+  const yp=total?Math.round(yes/total*100):0,np=total?100-yp:0;
+  const my=people[k]?.lastVote||"none";
+  const votedHtml=my==="yes"?`<div class="text-center p-3 bg-green-50 border-2 border-green-500 rounded-lg shadow-inner mb-4"><span class="text-3xl">😇👍</span><p class="text-sm font-semibold text-green-700 mt-1">Tvoj hlas: ÁNO</p></div>`:
+   my==="no"?`<div class="text-center p-3 bg-red-50 border-2 border-red-500 rounded-lg shadow-inner mb-4"><span class="text-3xl">😔👎</span><p class="text-sm font-semibold text-red-700 mt-1">Tvoj hlas: NIE</p></div>`:
+   `<div class="text-center p-3 bg-gray-50 border-2 border-gray-300 rounded-lg mb-4"><p class="text-sm font-semibold text-gray-500">Zatiaľ si nehlasoval/a.</p></div>`;
+  const cardHtml=`<div class="p-4 bg-white rounded-xl shadow-lg border border-gray-100"><h2 class="text-xl font-bold text-center mb-4 text-gray-800">${p.name}</h2>${votedHtml}
+  <div class="flex gap-2 mb-3"><button class="btn flex-1 text-white ${my==='yes'?'bg-green-700':'bg-green-500'}"onclick="handleVote('${k}','yes')">✅ Áno</button>
+  <button class="btn flex-1 text-white ${my==='no'?'bg-red-700':'bg-red-500'}"onclick="handleVote('${k}','no')">❌ Nie</button></div>
+  <div class="space-y-2 pt-2 border-t border-gray-200"><h3 class="font-bold text-sm text-gray-600">Celkové výsledky</h3>
+  <div class="flex justify-between text-sm font-medium"><span class="text-green-600">Áno:${yp}%(${yes})</span><span class="text-red-600">Nie:${np}%(${no})</span></div>
+  <div class="w-full bg-gray-200 rounded-full h-3 flex overflow-hidden"><div class="bg-green-500 h-3"style="width:${yp}%"></div><div class="bg-red-500 h-3"style="width:${np}%"></div></div>
+  <p class="text-xs text-gray-500 text-right">Spolu:${total} hlasov</p></div></div>`;
+  peopleList.insertAdjacentHTML('beforeend',cardHtml);
+  let cls="",icon="",text="";
+  if(yes>no){cls="bg-green-100 text-green-700 border-green-500";icon="✅";text="ÁNO";}
+  else if(no>yes){cls="bg-red-100 text-red-700 border-red-500";icon="❌";text="NIE";}
+  else{cls="bg-gray-100 text-gray-700 border-gray-300";icon="⚪";text=p.gender==='F'?"Nehlasovala":"Nehlasoval";}
+  const sumHtml=`<div class="summary-card border-2 ${cls}"><p class="summary-name">${p.name}</p><p class="summary-result">${icon} ${text}</p></div>`;
+  totalSummary.insertAdjacentHTML('beforeend',sumHtml);
+ });
+}
 
-                // Autentifikácia (použitie V8 metód)
-                if (initialAuthToken) {
-                    // Ak je token dostupný z platformy
-                    await auth.signInWithCustomToken(initialAuthToken);
-                } else {
-                    // Pre lokálne spustenie / anonymné prihlásenie
-                    await auth.signInAnonymously();
-                }
-                
-                userId = auth.currentUser?.uid || crypto.randomUUID();
-                
-                // Použitie správne konštruovanej cesty k dokumentu
-                await checkAndInitializePoll(); 
-                setupRealtimeListener();
+// --- Upravené hlasovanie (s lastVote) ---
+window.handleVote=async(personKey,newVote)=>{
+ if(!db)return;
+ const personName=PEOPLE[personKey].name;
+ const ref=getPollDocRef(db,appId);
+ let ttsMessage="";
+ messageDisplay.textContent=`Odosielam tvoj hlas pre ${personName}...`;
+ try{
+  await db.runTransaction(async tx=>{
+   const ds=await tx.get(ref);
+   if(!ds.exists)throw new Error("Dokument ankety neexistuje.");
+   const d=ds.data();const prev=d.userVotes?.[userId]?.[personKey];
+   const upd={};
+   if(prev==="yes")upd[`people.${personKey}.yes`]=firebase.firestore.FieldValue.increment(-1);
+   if(prev==="no")upd[`people.${personKey}.no`]=firebase.firestore.FieldValue.increment(-1);
+   upd[`people.${personKey}.${newVote}`]=firebase.firestore.FieldValue.increment(1);
+   upd[`userVotes.${userId}.${personKey}`]=newVote;
+   upd[`people.${personKey}.lastVote`]=newVote; // 🔥 nový riadok
+   tx.update(ref,upd);
+  });
+  ttsMessage=newVote==='yes'?`${personName}, ďakujem ti za tvoj hlas ÁNO. Stretneme sa pri čítaní svätého písma. Boh ti žehnaj.`:
+   `${personName} veľmi ma mrzí, že ti situácia nedovoľuje zúčastniť sa čítania svätého písma. Boh ti žehnaj.`;
+  playNativeAudio(ttsMessage);
+  messageDisplay.textContent=`Hlas pre ${personName} bol úspešne zaznamenaný!`;
+ }catch(e){console.error(e);messageDisplay.textContent=e.message;}
+ setTimeout(()=>messageDisplay.textContent="",2500);
+};
+// --- ADMIN, VYMAZANIE, OTÁZKY ---
+window.checkAdminCode=function(){
+ const c=adminCodeInput.value.trim();
+ if(c===ADMIN_CODE){
+  adminMessage.textContent="Kód je správny! Nebezpečná zóna je odomknutá.";
+  adminMessage.classList.remove('text-red-600');
+  adminMessage.classList.add('text-green-600');
+  adminPrompt.classList.add('hidden');
+  deletePollSection.classList.remove('hidden');
+  adminCodeInput.value='';
+  setTimeout(()=>adminMessage.textContent="",2500);
+ }else{
+  adminMessage.textContent="Neplatný kód. Skúste znova.";
+  adminMessage.classList.remove('text-green-600');
+  adminMessage.classList.add('text-red-600');
+  adminCodeInput.value='';
+ }
+};
 
-            } catch (error) {
-                console.error("Chyba pri inicializácii Firebase alebo autentifikácii:", error);
-                errorDiv.textContent = `Chyba: ${error.message}. Skúste obnoviť stránku.`;
-                errorDiv.classList.remove('hidden');
-                loadingDiv.classList.add('hidden');
-            }
-        }
-        
-        /**
-         * Skontroluje, či anketa existuje, a ak nie, vytvorí ju s počiatočnými nulovými hlasmi.
-         */
-        async function checkAndInitializePoll() {
-            const pollRef = getPollDocRef(db, appId); // POUŽITIE SPRÁVNEJ CESTY
-            // V9: const pollSnap = await getDoc(pollRef); -> V8:
-            const pollSnap = await pollRef.get(); 
+window.confirmDeletePoll=function(){
+ deleteConfirmationModal.classList.remove('hidden');
+ deleteConfirmationModal.classList.add('flex');
+};
+window.hideDeleteConfirmation=function(){
+ deleteConfirmationModal.classList.add('hidden');
+ deleteConfirmationModal.classList.remove('flex');
+};
 
-            if (!pollSnap.exists) {
-                console.log("Anketa neexistuje, inicializujem ju.");
-                
-                const initialPeopleData = {};
-                Object.keys(PEOPLE).forEach(key => {
-                    initialPeopleData[key] = { yes: 0, no: 0 };
-                });
+window.deletePoll=async function(){
+ if(!db){messageDisplay.textContent="Chyba: Databáza nie je inicializovaná.";hideDeleteConfirmation();return;}
+ hideDeleteConfirmation();messageDisplay.textContent="Vymazávam anketu a reštartujem...";
+ const ref=getPollDocRef(db,appId);
+ try{
+  await ref.delete();
+  await checkAndInitializePoll();
+  messageDisplay.textContent="Anketa bola úspešne vymazaná a reštartovaná!";
+  deletePollSection.classList.add('hidden');
+  adminPrompt.classList.remove('hidden');
+ }catch(e){console.error(e);messageDisplay.textContent="Chyba pri mazaní ankety:"+e.message;}
+ setTimeout(()=>messageDisplay.textContent='',3000);
+};
 
-                // V9: await setDoc(pollRef, { ... }); -> V8:
-                await pollRef.set({
-                    question: INITIAL_QUESTION,
-                    people: initialPeopleData,
-                    userVotes: {},
-                });
-            }
-        }
+window.toggleQuestionEditor=function(hideOnly=false){
+ if(questionEditor.classList.contains('hidden')&&!hideOnly){
+  questionEditor.classList.remove('hidden');
+  toggleEditorButton.textContent='Zrušiť zmenu otázky';
+  newQuestionInput.value=currentQuestion;editorMessage.textContent='';
+ }else if(!questionEditor.classList.contains('hidden')){
+  questionEditor.classList.add('hidden');
+  toggleEditorButton.textContent='Zmeniť otázku';
+  editorMessage.textContent='';
+ }
+};
 
-        /**
-         * Nastaví real-time listener na dokument ankety.
-         */
-        function setupRealtimeListener() {
-            const pollRef = getPollDocRef(db, appId); // POUŽITIE SPRÁVNEJ CESTY
+window.saveQuestion=async function(){
+ if(!db){editorMessage.textContent="Chyba: Databáza nie je pripravená.";return;}
+ const newQ=newQuestionInput.value.trim();
+ if(newQ.length<5){editorMessage.textContent="Otázka musí mať aspoň 5 znakov.";return;}
+ editorMessage.textContent="Ukladám novú otázku...";
+ const ref=getPollDocRef(db,appId);
+ try{
+  await ref.update({question:newQ});
+  editorMessage.textContent="Otázka bola úspešne uložená!";
+  setTimeout(()=>toggleQuestionEditor(true),1500);
+ }catch(e){console.error(e);editorMessage.textContent="Chyba:"+e.message;}
+};
 
-            // V9: onSnapshot(pollRef, ... -> V8:
-            pollRef.onSnapshot((docSnap) => {
-                loadingDiv.classList.add('hidden');
-                errorDiv.classList.add('hidden');
-
-                if (docSnap.exists) {
-                    render(docSnap.data());
-                } else {
-                    // Ak dokument neexistuje (bol vymazaný), skúsime ho znova inicializovať.
-                    checkAndInitializePoll();
-                    questionDisplay.textContent = "Anketa bola reštartovaná. Načítavam...";
-                }
-            }, (error) => {
-                console.error("Chyba pri načítaní dát z Firestore:", error);
-                errorDiv.textContent = "Chyba pri načítaní výsledkov: " + error.message;
-                errorDiv.classList.remove('hidden');
-            });
-        }
-        
-        /**
-         * Vykreslí výsledky ankety do UI.
-         * @param {object} data Dáta ankety z Firestore.
-         */
-        function render(data) {
-            currentQuestion = data.question || INITIAL_QUESTION;
-            questionDisplay.textContent = currentQuestion;
-            newQuestionInput.value = currentQuestion; 
-
-            const people = data.people || {};
-            const userVotes = data.userVotes?.[userId] || {};
-            
-            peopleList.innerHTML = ''; 
-            totalSummary.innerHTML = ''; 
-
-            Object.keys(PEOPLE).forEach(key => {
-                const personData = PEOPLE[key];
-                const name = personData.name;
-                const gender = personData.gender; // M/F
-                
-                const v = people[key] || { yes: 0, no: 0 };
-                const yes = v.yes || 0, no = v.no || 0, total = yes + no;
-                const yp = total ? Math.round(yes / total * 100) : 0;
-                const np = total ? 100 - yp : 0;
-                const my = userVotes[key] || "none";
-
-                // --- VYKRESLENIE HLASOVACIEHO KARTY ---
-                const votedHtml = my === "yes" ? `
-                    <div class="text-center p-3 bg-green-50 border-2 border-green-500 rounded-lg shadow-inner mb-4">
-                        <span class="text-3xl">😇👍</span>
-                        <p class="text-sm font-semibold text-green-700 mt-1">Tvoj hlas: ÁNO</p>
-                    </div>` : my === "no" ? `
-                    <div class="text-center p-3 bg-red-50 border-2 border-red-500 rounded-lg shadow-inner mb-4">
-                        <span class="text-3xl">😔👎</span>
-                        <p class="text-sm font-semibold text-red-700 mt-1">Tvoj hlas: NIE</p>
-                    </div>` : `
-                    <div class="text-center p-3 bg-gray-50 border-2 border-gray-300 rounded-lg mb-4">
-                        <p class="text-sm font-semibold text-gray-500">Zatiaľ si nehlasoval/a.</p>
-                    </div>`;
-
-                const cardHtml = `
-                    <div class="p-4 bg-white rounded-xl shadow-lg border border-gray-100 transition-all duration-300 transform hover:shadow-xl">
-                        <h2 class="text-xl font-bold text-center mb-4 text-gray-800">${name}</h2>
-                        
-                        ${votedHtml}
-
-                        <div class="flex gap-2 mb-3">
-                            <button class="btn flex-1 text-white 
-                                ${my === 'yes' ? 'bg-green-700 hover:bg-green-800 ring-4 ring-green-300' : 'bg-green-500 hover:bg-green-600'}"
-                                onclick="handleVote('${key}','yes')">
-                                ✅ Áno
-                            </button>
-                            <button class="btn flex-1 text-white 
-                                ${my === 'no' ? 'bg-red-700 hover:bg-red-800 ring-4 ring-red-300' : 'bg-red-500 hover:bg-red-600'}"
-                                onclick="handleVote('${key}','no')">
-                                ❌ Nie
-                            </button>
-                        </div>
-
-                        <div class="space-y-2 pt-2 border-t border-gray-200">
-                            <h3 class="font-bold text-sm text-gray-600">Celkové výsledky</h3>
-                            <div class="flex justify-between text-sm font-medium">
-                                <span class="text-green-600 flex items-center">Áno: ${yp}% (${yes})</span>
-                                <span class="text-red-600 flex items-center">Nie: ${np}% (${no})</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-3 flex overflow-hidden" title="Celkom ${total} hlasov">
-                                <div class="bg-green-500 h-3 transition-all duration-700 ease-out" style="width: ${yp}%"></div>
-                                <div class="bg-red-500 h-3 transition-all duration-700 ease-out" style="width: ${np}%"></div>
-                            </div>
-                            <p class="text-xs text-gray-500 text-right">Spolu: ${total} hlasov</p>
-                        </div>
-                    </div>`;
-                peopleList.insertAdjacentHTML('beforeend', cardHtml);
-
-
-                // --- VYKRESLENIE SÚHRNU (Upravená štruktúra pre CSS) ---
-                let cls = "", icon="", text="";
-                
-                if (yes > no) { 
-                    // Má väčšinu hlasov ÁNO
-                    cls = "bg-green-100 text-green-700 border-green-500"; 
-                    icon = "✅"; 
-                    text = "ÁNO"; 
-                } else if (no > yes) { 
-                    // Má väčšinu hlasov NIE
-                    cls = "bg-red-100 text-red-700 border-red-500"; 
-                    icon = "❌"; 
-                    text = "NIE"; 
-                } else {
-                    // Remíza (vrátane 0:0, kde sa použije rodovo špecifický text "Nehlasoval/a")
-                    cls = "bg-gray-100 text-gray-700 border-gray-300"; 
-                    icon = "⚪"; 
-                    text = gender === 'F' ? "Nehlasovala" : "Nehlasoval";
-                }
-
-                // Používame novú triedu 'summary-card' a 'summary-name'/'summary-result' pre presné cielené CSS
-                const sumHtml = `
-                    <div class="summary-card border-2 ${cls}">
-                        <p class="summary-name text-gray-800">${name}</p>
-                        <p class="summary-result">${icon} ${text}</p>
-                    </div>
-                `;
-                totalSummary.insertAdjacentHTML('beforeend', sumHtml);
-            });
-        }
-        
-        // --- FUNKCIE PRE HLASOVANIE A TTS ---
-
-        /**
-         * Spracuje hlasovanie používateľa s kontrolou, či už hlasoval a spustením TTS.
-         */
-        window.handleVote = async (personKey, newVote) => {
-            if (!db) {
-                messageDisplay.textContent = "Chyba: Databáza nie je pripravená.";
-                return;
-            }
-
-            const personName = PEOPLE[personKey].name; // Použitie novej štruktúry
-            const ref = getPollDocRef(db, appId); // POUŽITIE SPRÁVNEJ CESTY
-            
-            let ttsMessage = "";
-            let ttsPlayed = false;
-
-            messageDisplay.textContent = `Odosielam tvoj hlas pre ${personName}...`;
-
-            try {
-                // V9: await runTransaction(db, async (tx) => { ... -> V8:
-                await db.runTransaction(async (tx) => {
-                    const ds = await tx.get(ref);
-                    if (!ds.exists) throw new Error("Dokument ankety neexistuje.");
-                    
-                    const data = ds.data();
-                    const prev = data.userVotes?.[userId]?.[personKey];
-
-                    if (prev === newVote) {
-                        // Ak je hlas rovnaký, len prehráme TTS a ukončíme transakciu.
-                        throw new Error("Hlas sa nezmenil, nie je potrebné aktualizovať databázu.");
-                    }
-
-                    const upd = {};
-                    
-                    // Dekrement predchádzajúceho hlasu (ak existoval)
-                    // V9: increment(-1) -> V8: firebase.firestore.FieldValue.increment(-1)
-                    if (prev === "yes") upd[`people.${personKey}.yes`] = firebase.firestore.FieldValue.increment(-1);
-                    if (prev === "no") upd[`people.${personKey}.no`] = firebase.firestore.FieldValue.increment(-1);
-                    
-                    // Inkremet nového hlasu
-                    // V9: increment(1) -> V8: firebase.firestore.FieldValue.increment(1)
-                    upd[`people.${personKey}.${newVote}`] = firebase.firestore.FieldValue.increment(1);
-                    upd[`userVotes.${userId}.${personKey}`] = newVote;
-                    
-                    tx.update(ref, upd);
-                    
-                    // Generovanie TTS správy po úspešnej transakcii
-                    if (newVote === 'yes') {
-                        ttsMessage = `${personName}, ďakujem ti za tvoj hlas ÁNO. Stretneme sa pri čítaní svätého písma. Boh ti žehnaj.`;
-                    } else {
-                        ttsMessage = `${personName} veľmi ma mrzí, že ti situácia nedovoľuje zúčastniť sa čítania svätého písma. Boh ti žehnaj.`;
-                    }
-                    ttsPlayed = true;
-
-                });
-                
-                // Spustenie TTS po transakcii
-                if (ttsPlayed && ttsMessage) {
-                    playNativeAudio(ttsMessage);
-                }
-
-                messageDisplay.textContent = `Hlas pre ${personName} bol úspešne zaznamenaný!`;
-
-            } catch (e) {
-                if (e?.message && e.message.includes("Hlas sa nezmenil")) {
-                    // Prehráme TTS, ak sa hlas nezmenil, ale transakcia bola zrušená
-                    if (newVote === 'yes') {
-                        ttsMessage = `${personName}, ďakujem ti za tvoj hlas ÁNO. Stretneme sa pri čítaní svätého písma. Boh ti žehnaj.`;
-                    } else {
-                        ttsMessage = `${personName} veľmi ma mrzí, že ti situácia nedovoľuje zúčastniť sa čítania svätého písma. Boh ti žehnaj.`;
-                    }
-                    playNativeAudio(ttsMessage);
-                    messageDisplay.textContent = "Už si hlasoval/a rovnako. Zvuk sa však prehrá.";
-                } else {
-                    console.error("Chyba pri hlasovaní:", e);
-                    messageDisplay.textContent = e?.message || "Chyba pri hlasovaní.";
-                }
-            } finally {
-                setTimeout(()=>messageDisplay.textContent="",2500);
-            }
-        };
-
-        // --- FUNKCIE PRE VYMAZANIE ANKETY, EDITOR OTÁZOK A ADMIN PRÍSTUP ---
-        
-        /**
-         * Skontroluje zadaný kód a odomkne Nebezpečnú Zónu.
-         */
-        window.checkAdminCode = function() {
-            const enteredCode = adminCodeInput.value.trim();
-            
-            if (enteredCode === ADMIN_CODE) {
-                adminMessage.textContent = "Kód je správny! Nebezpečná zóna je odomknutá.";
-                adminMessage.classList.remove('text-red-600');
-                adminMessage.classList.add('text-green-600');
-                
-                // Skryť prompt pre admin kód
-                adminPrompt.classList.add('hidden');
-                
-                // Zobraziť nebezpečnú zónu
-                deletePollSection.classList.remove('hidden');
-                
-                // Vyčistiť input
-                adminCodeInput.value = '';
-                
-                // Po krátkom čase vymazať správu
-                setTimeout(() => adminMessage.textContent = "", 2500);
-
-            } else {
-                adminMessage.textContent = "Neplatný kód. Skúste znova.";
-                adminMessage.classList.remove('text-green-600');
-                adminMessage.classList.add('text-red-600');
-                
-                // Vyčistiť pole
-                adminCodeInput.value = '';
-            }
-        }
-
-        window.confirmDeletePoll = function() {
-            deleteConfirmationModal.classList.remove('hidden');
-            deleteConfirmationModal.classList.add('flex'); 
-        }
-
-        window.hideDeleteConfirmation = function() {
-            deleteConfirmationModal.classList.add('hidden');
-            deleteConfirmationModal.classList.remove('flex');
-        }
-
-        /**
-         * Natrvalo vymaže dokument ankety a re-inicializuje ju.
-         */
-        window.deletePoll = async function() {
-            if (!db) {
-                messageDisplay.textContent = "Chyba: Databáza nie je inicializovaná.";
-                hideDeleteConfirmation();
-                return;
-            }
-
-            hideDeleteConfirmation(); 
-            messageDisplay.textContent = "Vymazávam anketu a reštartujem...";
-
-            const pollRef = getPollDocRef(db, appId); // POUŽITIE SPRÁVNEJ CESTY
-
-            try {
-                // 1. Vykonáme vymazanie dokumentu
-                // V9: await deleteDoc(pollRef); -> V8:
-                await pollRef.delete();
-                
-                // 2. Manuálna re-inicializácia po vymazaní
-                await checkAndInitializePoll(); 
-                
-                messageDisplay.textContent = "Anketa bola úspešne vymazaná a reštartovaná!";
-                
-                // Skryjeme Nebezpečnú zónu po reštarte
-                deletePollSection.classList.add('hidden');
-                adminPrompt.classList.remove('hidden');
-
-            } catch (error) {
-                console.error("Chyba pri mazaní ankety:", error);
-                messageDisplay.textContent = `Chyba pri mazaní ankety: ${error.message}`;
-            } finally {
-                setTimeout(() => {
-                    messageDisplay.textContent = ''; 
-                }, 3000); 
-            }
-        }
-        
-        /**
-         * Prepína viditeľnosť editora otázok.
-         * @param {boolean} hideOnly Ak je true, editor sa len skryje.
-         */
-        window.toggleQuestionEditor = function(hideOnly = false) {
-            if (questionEditor.classList.contains('hidden') && !hideOnly) {
-                questionEditor.classList.remove('hidden');
-                toggleEditorButton.textContent = 'Zrušiť zmenu otázky';
-                newQuestionInput.value = currentQuestion;
-                editorMessage.textContent = '';
-            } else if (!questionEditor.classList.contains('hidden')) {
-                questionEditor.classList.add('hidden');
-                toggleEditorButton.textContent = 'Zmeniť otázku';
-                editorMessage.textContent = '';
-            }
-        }
-        
-        /**
-         * Uloží novú otázku do Firestore.
-         */
-        window.saveQuestion = async function() {
-            if (!db) {
-                editorMessage.textContent = "Chyba: Databáza nie je pripravená.";
-                return;
-            }
-
-            const newQuestion = newQuestionInput.value.trim();
-            if (newQuestion.length < 5) {
-                editorMessage.textContent = "Otázka musí mať aspoň 5 znakov.";
-                return;
-            }
-
-            editorMessage.textContent = "Ukladám novú otázku...";
-            
-            const pollRef = getPollDocRef(db, appId); // POUŽITIE SPRÁVNEJ CESTY
-
-            try {
-                // V9: await updateDoc(pollRef, { question: newQuestion }); -> V8:
-                await pollRef.update({
-                    question: newQuestion
-                });
-
-                editorMessage.textContent = "Otázka bola úspešne uložená a aktualizovaná!";
-                setTimeout(() => {
-                    toggleQuestionEditor(true);
-                }, 1500); 
-
-            } catch (error) {
-                console.error("Chyba pri ukladaní otázky:", error);
-                editorMessage.textContent = `Chyba pri ukladaní: ${error.message}`;
-            }
-        }
-
-        // Spustenie aplikácie po načítaní okna
-        window.onload = initFirebase;
-    </script>
-
+window.onload=initFirebase;
+</script>
 </body>
 </html>
