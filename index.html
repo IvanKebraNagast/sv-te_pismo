@@ -37,6 +37,43 @@
         .btn:active {
             transform: scale(0.95);
         }
+        
+        /* --- KOREKCIA CSS pre sekciu súhrnu --- */
+        /* Nastaví grid a medzery */
+        #total-summary {
+            display: grid;
+            /* Zníženie minimálnej šírky pre lepšiu kompresiu na mobile/tablete */
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); 
+            gap: 0.5rem; /* Zníženie medzery pre lepšie využitie priestoru */
+        }
+        
+        /* Štýl pre každú sumárnu kartu */
+        .summary-card {
+            padding: 0.75rem; /* menší padding */
+            height: 100%; /* Zabezpečenie rovnakej výšky */
+            display: flex; /* Flexbox pre vertikálne zarovnanie obsahu */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* Vertikálne centrovanie */
+            text-align: center;
+            border-radius: 0.75rem; /* Zaoblenie */
+        }
+        
+        /* Zmenšenie fontu pre celkový výsledok a zabezpečenie zalomenia */
+        .summary-result {
+            font-size: 1.25rem; /* Zmenšenie z 2xl (1.5rem) na 1.25rem */
+            font-weight: 800;
+            margin-top: 0.25rem;
+            word-break: break-word; /* Umožní zalomenie dlhého textu v malom priestore */
+            line-height: 1.2;
+        }
+
+        /* Zabezpečenie, že mená sú čitateľné */
+        .summary-name {
+            font-size: 1rem; /* text-base */
+            font-weight: 600;
+        }
+        /* ---------------------------------- */
     </style>
 </head>
 <body>
@@ -97,8 +134,22 @@
             <p id="editor-message" class="text-sm pt-2 h-5 text-center text-gray-600"></p>
         </div>
         
-        <!-- Sekcia pre VYMAZANIE ANKETY -->
-        <div class="mt-12 pt-6 border-t border-red-300 text-center">
+        <!-- Sekcia pre ADMIN PRÍSTUP k Nebezpečnej Zóne (Nový prvok) -->
+        <div id="admin-access-section" class="mt-12 pt-6 border-t border-gray-300 text-center">
+            <h3 class="text-xl font-bold text-gray-700 mb-3">Administrátorský prístup</h3>
+            <div id="admin-prompt" class="max-w-xs mx-auto flex gap-2">
+                <input type="password" id="admin-code-input" placeholder="Zadajte kód pre Nebezpečnú Zónu"
+                    class="w-full p-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 text-gray-700 shadow-inner">
+                <button onclick="checkAdminCode()"
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition duration-150 active:scale-95 transform">
+                    OK
+                </button>
+            </div>
+            <p id="admin-message" class="text-sm pt-2 h-5 text-center text-red-600"></p>
+        </div>
+
+        <!-- Sekcia pre VYMAZANIE ANKETY (Teraz skrytá a odomknutá kódom) -->
+        <div id="delete-poll-section" class="pt-6 border-t border-red-300 text-center hidden">
             <h3 class="text-xl font-bold text-red-600 mb-3">Nebezpečná Zóna (Reštart)</h3>
             <button id="confirm-delete-button" onclick="confirmDeletePoll()"
                 class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-150 active:scale-95 transform hover:shadow-xl">
@@ -139,6 +190,10 @@
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
     <script>
         
+        // --- ADMIN KÓD ---
+        const ADMIN_CODE = "reset2024"; // TU JE VÁŠ KÓD. Zmeňte ho!
+        // ------------------
+        
         // Funkcie Firebase sú teraz dostupné globálne cez objekt 'firebase'
         let db;
         let auth;
@@ -165,15 +220,16 @@
             
         const INITIAL_QUESTION = "Kto pravidelne číta Sväté Písmo?";
 
-        // Štruktúra mien a kľúčov pre databázu
+        // Štruktúra mien, kľúčov a POHLAVIA pre databázu
+        // F = Ženské, M = Mužské
         const PEOPLE = {
-            'adka': 'Aďka',
-            'danka': 'Danka',
-            'emilia': 'Emília',
-            'ivan': 'Ivan',
-            'janka': 'Janka',
-            'marketka': 'Markétka',
-            'milan': 'Milan'
+            'adka': { name: 'Aďka', gender: 'F' },
+            'danka': { name: 'Danka', gender: 'F' },
+            'emilia': { name: 'Emília', gender: 'F' },
+            'ivan': { name: 'Ivan', gender: 'M' },
+            'janka': { name: 'Janka', gender: 'F' },
+            'marketka': { name: 'Markétka', gender: 'F' },
+            'milan': { name: 'Milan', gender: 'M' }
         };
 
         // Elementy UI
@@ -181,23 +237,29 @@
         const peopleList = document.getElementById('people-list');
         const loadingDiv = document.getElementById('loading');
         const errorDiv = document.getElementById('error-message');
-        const messageDisplay = document.getElementById('message-display');
+        const messageDisplay = document.getElementById('main-message-container').querySelector('p');
         const questionEditor = document.getElementById('question-editor');
         const toggleEditorButton = document.getElementById('toggle-editor-button');
         const newQuestionInput = document.getElementById('new-question-input');
         const editorMessage = document.getElementById('editor-message');
         const totalSummary = document.getElementById('total-summary');
         const deleteConfirmationModal = document.getElementById('delete-confirmation-modal');
+        
+        // Nové admin prvky
+        const adminCodeInput = document.getElementById('admin-code-input');
+        const adminMessage = document.getElementById('admin-message');
+        const deletePollSection = document.getElementById('delete-poll-section'); // Pôvodná "Nebezpečná zóna"
+        const adminPrompt = document.getElementById('admin-prompt');
+
 
         /**
          * Vytvorí referenciu na dokument ankety.
-         * Používa plnú cestu pre verejné dáta Canvas: /artifacts/{appId}/public/data/polls/current_poll
+         * Používa plnú cestu pre verejné dáta Canvas: /artifacts/{appId}/public/data/polls/svate_pismo
          */
         function getPollDocRef(db, appId) {
             // Táto cesta zodpovedá bezpečnostným pravidlám pre verejné/zdieľané dáta.
             // POUŽITIE V8 KOMPATIBILNEJ CESTY db.collection().doc().collection()...
-            // DÔLEŽITÉ: Dokumentová referencia MUSÍ mať párny počet segmentov (napr. 6).
-            return db.collection("artifacts").doc(appId).collection("public").doc("data").collection("polls").doc("current_poll"); // Zmena 'svate_pismo' na 'current_poll'
+            return db.collection("artifacts").doc(appId).collection("public").doc("data").collection("polls").doc("svate_pismo");
         }
 
 
@@ -220,15 +282,6 @@
             }
             loadVoices();
         }
-
-        // ✅ Oprava pre mobilné prehliadače (TTS nehrá, kým používateľ neklikne)
-        document.body.addEventListener('click', function initAudioOnce() {
-            if ('speechSynthesis' in window) {
-                const dummy = new SpeechSynthesisUtterance('');
-                window.speechSynthesis.speak(dummy);
-            }
-            document.body.removeEventListener('click', initAudioOnce);
-        });
 
         /**
          * Vygeneruje reč z textu pomocou natívneho TTS API prehliadača.
@@ -331,7 +384,7 @@
                     questionDisplay.textContent = "Anketa bola reštartovaná. Načítavam...";
                 }
             }, (error) => {
-                console.log("Firestore error:", error); // Zmena console.error na console.log pre zníženie hluku
+                console.error("Chyba pri načítaní dát z Firestore:", error);
                 errorDiv.textContent = "Chyba pri načítaní výsledkov: " + error.message;
                 errorDiv.classList.remove('hidden');
             });
@@ -353,7 +406,10 @@
             totalSummary.innerHTML = ''; 
 
             Object.keys(PEOPLE).forEach(key => {
-                const name = PEOPLE[key];
+                const personData = PEOPLE[key];
+                const name = personData.name;
+                const gender = personData.gender; // M/F
+                
                 const v = people[key] || { yes: 0, no: 0 };
                 const yes = v.yes || 0, no = v.no || 0, total = yes + no;
                 const yp = total ? Math.round(yes / total * 100) : 0;
@@ -409,15 +465,31 @@
                 peopleList.insertAdjacentHTML('beforeend', cardHtml);
 
 
-                // --- VYKRESLENIE SÚHRNU ---
-                let cls = "bg-gray-100 text-gray-700 border-gray-300", icon="⚪", text="Remíza";
-                if (yes > no) { cls = "bg-green-100 text-green-700 border-green-500"; icon = "✅"; text = "ÁNO"; }
-                else if (no > yes) { cls = "bg-red-100 text-red-700 border-red-500"; icon = "❌"; text = "NIE"; }
+                // --- VYKRESLENIE SÚHRNU (Upravená štruktúra pre CSS) ---
+                let cls = "", icon="", text="";
+                
+                if (yes > no) { 
+                    // Má väčšinu hlasov ÁNO
+                    cls = "bg-green-100 text-green-700 border-green-500"; 
+                    icon = "✅"; 
+                    text = "ÁNO"; 
+                } else if (no > yes) { 
+                    // Má väčšinu hlasov NIE
+                    cls = "bg-red-100 text-red-700 border-red-500"; 
+                    icon = "❌"; 
+                    text = "NIE"; 
+                } else {
+                    // Remíza (vrátane 0:0, kde sa použije rodovo špecifický text "Nehlasoval/a")
+                    cls = "bg-gray-100 text-gray-700 border-gray-300"; 
+                    icon = "⚪"; 
+                    text = gender === 'F' ? "Nehlasovala" : "Nehlasoval";
+                }
 
+                // Používame novú triedu 'summary-card' a 'summary-name'/'summary-result' pre presné cielené CSS
                 const sumHtml = `
-                    <div class="p-3 rounded-xl border-2 ${cls} flex flex-col items-center justify-center text-center font-semibold">
-                        <p class="text-lg font-semibold">${name}</p>
-                        <p class="text-2xl font-extrabold mt-1">${icon} ${text}</p>
+                    <div class="summary-card border-2 ${cls}">
+                        <p class="summary-name text-gray-800">${name}</p>
+                        <p class="summary-result">${icon} ${text}</p>
                     </div>
                 `;
                 totalSummary.insertAdjacentHTML('beforeend', sumHtml);
@@ -435,7 +507,7 @@
                 return;
             }
 
-            const personName = PEOPLE[personKey];
+            const personName = PEOPLE[personKey].name; // Použitie novej štruktúry
             const ref = getPollDocRef(db, appId); // POUŽITIE SPRÁVNEJ CESTY
             
             let ttsMessage = "";
@@ -507,8 +579,41 @@
             }
         };
 
-        // --- FUNKCIE PRE VYMAZANIE ANKETY A EDITOR OTÁZOK ---
+        // --- FUNKCIE PRE VYMAZANIE ANKETY, EDITOR OTÁZOK A ADMIN PRÍSTUP ---
         
+        /**
+         * Skontroluje zadaný kód a odomkne Nebezpečnú Zónu.
+         */
+        window.checkAdminCode = function() {
+            const enteredCode = adminCodeInput.value.trim();
+            
+            if (enteredCode === ADMIN_CODE) {
+                adminMessage.textContent = "Kód je správny! Nebezpečná zóna je odomknutá.";
+                adminMessage.classList.remove('text-red-600');
+                adminMessage.classList.add('text-green-600');
+                
+                // Skryť prompt pre admin kód
+                adminPrompt.classList.add('hidden');
+                
+                // Zobraziť nebezpečnú zónu
+                deletePollSection.classList.remove('hidden');
+                
+                // Vyčistiť input
+                adminCodeInput.value = '';
+                
+                // Po krátkom čase vymazať správu
+                setTimeout(() => adminMessage.textContent = "", 2500);
+
+            } else {
+                adminMessage.textContent = "Neplatný kód. Skúste znova.";
+                adminMessage.classList.remove('text-green-600');
+                adminMessage.classList.add('text-red-600');
+                
+                // Vyčistiť pole
+                adminCodeInput.value = '';
+            }
+        }
+
         window.confirmDeletePoll = function() {
             deleteConfirmationModal.classList.remove('hidden');
             deleteConfirmationModal.classList.add('flex'); 
@@ -544,6 +649,10 @@
                 
                 messageDisplay.textContent = "Anketa bola úspešne vymazaná a reštartovaná!";
                 
+                // Skryjeme Nebezpečnú zónu po reštarte
+                deletePollSection.classList.add('hidden');
+                adminPrompt.classList.remove('hidden');
+
             } catch (error) {
                 console.error("Chyba pri mazaní ankety:", error);
                 messageDisplay.textContent = `Chyba pri mazaní ankety: ${error.message}`;
