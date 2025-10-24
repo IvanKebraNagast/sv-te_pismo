@@ -1,3 +1,5 @@
+<!DOCTYPE html> 
+<html lang="sk">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,78 +20,31 @@
   <meta name="twitter:description" content="Zapoj sa do ankety a hlasuj!">
   <meta name="twitter:image" content="https://ivankebranagast.github.io/sv_te_pismo/jezis.jpg">
 
-  <!-- Štýly -->
+  <!-- Tailwind + fonty -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Inter', sans-serif;
+      background-color: #f3f4f6;
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       align-items: center;
-      justify-content: flex-start;
       min-height: 100vh;
-      background-color: #f9fafb;
-      color: #333;
-      text-align: center;
-      margin: 0;
+      padding: 20px;
     }
+    .spinner { border-top-color: #3b82f6; animation: spinner 1.5s linear infinite; }
+    @keyframes spinner { 0% { transform: rotate(0) } 100% { transform: rotate(360deg) } }
+    .btn {
+      font-weight: bold; padding: 0.75rem 1rem; border-radius: 0.75rem;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / .1), 0 2px 4px -2px rgb(0 0 0 / .1);
+      transition: .15s all cubic-bezier(.4, 0, .2, 1); transform: scale(1);
+      display: flex; align-items: center; justify-content: center; font-size: 1.125rem;
+    }
+    .btn:active { transform: scale(.95); }
   </style>
 </head>
-    h1 { color: #1e3a8a; }
-    img { max-width: 300px; border-radius: 12px; margin-top: 20px; }
-  </style>
-</head>
-<body>
-  <h1>📖 Anketa čítanie Svätého písma</h1>
-  <p>Stránka je funkčná! Pri zdieľaní sa zobrazí obrázok nižšie 👇</p>
-  <img src="jezis.jpg" alt="Ježiš">
-</body>
-</html>
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anketa čítanie svätého písma</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .spinner { border-top-color:#3b82f6;animation:spinner 1.5s linear infinite;}
-        @keyframes spinner {0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
-        .btn{font-weight:bold;padding:0.75rem 1rem;border-radius:0.75rem;box-shadow:0 4px 6px -1px rgb(0 0 0 / .1),0 2px 4px -2px rgb(0 0 0 / .1);transition:.15s all cubic-bezier(.4,0,.2,1);transform:scale(1);display:flex;align-items:center;justify-content:center;font-size:1.125rem}
-        .btn:active{transform:scale(.95)}
-        #total-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:.5rem}
-        .summary-card{padding:.75rem;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:.75rem}
-        .summary-result{font-size:1.25rem;font-weight:800;margin-top:.25rem;word-break:break-word;line-height:1.2}
-        .summary-name{font-size:1rem;font-weight:600}
-        
-        #global-message-container { transition: all 0.3s ease-in-out; min-height: 1.5rem; }
-        .tts-message-style {
-            padding: 0.75rem 1rem; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            font-size: 1rem; font-weight: 800; color: #1e40af; background-color: #eff6ff; border: 2px solid #3b82f6;
-            display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-align: center;
-            /* ZMENA: Povolenie zalamovania pre dlhý text */
-            flex-wrap: wrap;
-        }
-        .tts-message-style .emoji { font-size: 1.5rem; line-height: 1; }
-
-        .vote-message-slot {
-            max-height: 0; overflow: hidden; opacity: 0; padding: 0; margin-bottom: 0;
-            transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out, padding 0.4s ease-in-out, margin-bottom 0.4s ease-in-out;
-        }
-        .vote-message-slot.show {
-            /* ZMENA: Zvýšená max-height z 200px na 500px, aby sa text neorezal zdola */
-            max-height: 500px; opacity: 1; padding-top: 0.75rem; padding-bottom: 0.75rem; margin-bottom: 1rem;
-        }
-
-    </style>
-</head>
 <body>
 <div id="app" class="w-full max-w-4xl p-6 md:p-10 bg-white shadow-2xl rounded-xl mx-auto">
     <h1 class="text-4xl font-extrabold text-gray-800 mb-2 text-center flex items-center justify-center">
@@ -742,6 +697,3 @@ window.onload=initFirebase;
 </script>
 </body>
 </html>
-
-
-
